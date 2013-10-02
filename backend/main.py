@@ -61,6 +61,12 @@ class Entity(object):
         self.components.append(component)
         component.entity = self
 
+    def find_component(self, cls):
+        for component in self.components:
+            if isinstance(component, cls):
+                return component
+        return None
+
     def create(self):
         for component in self.components:
             component.create()
@@ -68,6 +74,22 @@ class Entity(object):
     def delete(self):
         for component in reversed(self.components):
             component.delete()
+
+class SpriteComponent(Component):
+    def __init__(self):
+        super(SpriteComponent, self).__init__()
+        self.sprites = []
+
+    def add_sprite(self, sprite):
+        self.sprites.append(sprite)
+
+    def create(self):
+        for sprite in self.sprites:
+            sprite.batch = self.entity.game.batch
+
+    def delete(self):
+        for sprite in reversed(self.sprites):
+            sprite.batch = None
 
 class ShipComponent(Component):
     def __init__(self, player_index=-1, x=0.0, y=0.0, angle=0.0):
@@ -77,18 +99,16 @@ class ShipComponent(Component):
         self.y = y
         self.angle = angle
         self.transform = Transform()
-        vertices = generate_circle_vertices(3, angle=(0.5 * math.pi))
-        self.sprite = PolygonSprite(vertices)
+        self.sprite_component = None
 
     def create(self):
-        self.sprite.batch = self.entity.game.batch
+        self.sprite_component = self.entity.find_component(SpriteComponent)
         self.entity.game.update_handlers.append(self)
         self.entity.game.draw_handlers.append(self)
 
     def delete(self):
         self.entity.game.draw_handlers.remove(self)
         self.entity.game.update_handlers.remove(self)
-        self.sprite.batch = None
 
     def update(self, dt):
         self.angle += dt
@@ -97,21 +117,7 @@ class ShipComponent(Component):
         self.transform.rotate(self.angle)
 
     def draw(self):
-        self.sprite.transform = self.transform
-
-class BoulderComponent(Component):
-    def __init__(self, x=0.0, y=0.0):
-        super(BoulderComponent, self).__init__()
-        vertices = generate_circle_vertices(6)
-        transform = Transform()
-        transform.translate(x, y)
-        self.sprite = PolygonSprite(vertices, transform=transform)
-
-    def create(self):
-        self.sprite.batch = self.entity.game.batch
-
-    def delete(self):
-        self.sprite.batch = None
+        self.sprite_component.sprites[0].transform = self.transform
 
 class Game(pyglet.window.Window):
     def __init__(self):
@@ -175,12 +181,27 @@ class Game(pyglet.window.Window):
 
 def create_ship_entity():
     entity = Entity()
+
+    sprite_component = SpriteComponent()
+    vertices = generate_circle_vertices(3, angle=(0.5 * math.pi))
+    sprite = PolygonSprite(vertices)
+    sprite_component.add_sprite(sprite)
+    entity.add_component(sprite_component)
+
     entity.add_component(ShipComponent())
     return entity
 
 def create_boulder_entity(x=0.0, y=0.0):
     entity = Entity()
-    entity.add_component(BoulderComponent(x=x, y=y))
+
+    sprite_component = SpriteComponent()
+    vertices = generate_circle_vertices(6)
+    transform = Transform()
+    transform.translate(x, y)
+    sprite = PolygonSprite(vertices, transform=transform)
+    sprite_component.add_sprite(sprite)
+    entity.add_component(sprite_component)
+
     return entity
 
 if __name__ == '__main__':
