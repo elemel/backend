@@ -42,9 +42,9 @@ def fill_polygon(vertices, color=WHITE):
                          ('v2f', tuple(vertex_data)),
                          ('c4B', len(vertices) * color))
 
-class Entity(object):
+class Component(object):
     def __init__(self):
-        self.window = None
+        self.entity = None
 
     def create(self):
         pass
@@ -52,9 +52,26 @@ class Entity(object):
     def delete(self):
         pass
 
-class Ship(Entity):
+class Entity(object):
+    def __init__(self):
+        self.game = None
+        self.components = []
+
+    def add_component(self, component):
+        self.components.append(component)
+        component.entity = self
+
+    def create(self):
+        for component in self.components:
+            component.create()
+
+    def delete(self):
+        for component in reversed(self.components):
+            component.delete()
+
+class ShipComponent(Component):
     def __init__(self, player_index=-1, x=0.0, y=0.0, angle=0.0):
-        super(Ship, self).__init__()
+        super(ShipComponent, self).__init__()
         self.player_index = player_index
         self.x = x
         self.y = y
@@ -64,13 +81,13 @@ class Ship(Entity):
         self.sprite = PolygonSprite(vertices)
 
     def create(self):
-        self.sprite.batch = self.window.batch
-        self.window.update_handlers.append(self)
-        self.window.draw_handlers.append(self)
+        self.sprite.batch = self.entity.game.batch
+        self.entity.game.update_handlers.append(self)
+        self.entity.game.draw_handlers.append(self)
 
     def delete(self):
-        self.window.draw_handlers.remove(self)
-        self.window.update_handlers.remove(self)
+        self.entity.game.draw_handlers.remove(self)
+        self.entity.game.update_handlers.remove(self)
         self.sprite.batch = None
 
     def update(self, dt):
@@ -82,22 +99,23 @@ class Ship(Entity):
     def draw(self):
         self.sprite.transform = self.transform
 
-class Boulder(Entity):
+class BoulderComponent(Component):
     def __init__(self, x=0.0, y=0.0):
+        super(BoulderComponent, self).__init__()
         vertices = generate_circle_vertices(6)
         transform = Transform()
         transform.translate(x, y)
         self.sprite = PolygonSprite(vertices, transform=transform)
 
     def create(self):
-        self.sprite.batch = self.window.batch
+        self.sprite.batch = self.entity.game.batch
 
     def delete(self):
         self.sprite.batch = None
 
-class BackendWindow(pyglet.window.Window):
+class Game(pyglet.window.Window):
     def __init__(self):
-        super(BackendWindow, self).__init__(fullscreen=True)
+        super(Game, self).__init__(fullscreen=True)
         self.controls = [4 * [False], 4 * [False]]
         self.time = 0.0
         self.camera_scale = 0.1
@@ -108,12 +126,12 @@ class BackendWindow(pyglet.window.Window):
 
     def add_entity(self, entity):
         self.entities.append(entity)
-        entity.window = self
+        entity.game = self
         entity.create()
 
     def remove_entity(self, entity):
         entity.delete()
-        entity.window = None
+        entity.game = None
         self.entities.remove(entity)
 
     def on_key_press(self, symbol, modifiers):
@@ -155,9 +173,20 @@ class BackendWindow(pyglet.window.Window):
     def draw_hud(self):
         pass
 
+def create_ship_entity():
+    entity = Entity()
+    entity.add_component(ShipComponent())
+    return entity
+
+def create_boulder_entity(x=0.0, y=0.0):
+    entity = Entity()
+    entity.add_component(BoulderComponent(x=x, y=y))
+    return entity
+
 if __name__ == '__main__':
-    backend_window = BackendWindow()
-    backend_window.add_entity(Ship())
-    backend_window.add_entity(Boulder(x=3.0))
-    pyglet.clock.schedule(backend_window.update)
+    game = Game()
+    game.add_entity(create_ship_entity())
+    game.add_entity(create_boulder_entity(x=3.0))
+
+    pyglet.clock.schedule(game.update)
     pyglet.app.run()
