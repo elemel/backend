@@ -46,7 +46,7 @@ class Transform(object):
     def rotate(self, angle):
         cos_angle = math.cos(angle)
         sin_angle = math.sin(angle)
-        self.multiply(cos_angle, sin_angle, 0.0, -sin_angle, cos_angle, 0.0)
+        self.multiply(cos_angle, -sin_angle, 0.0, sin_angle, cos_angle, 0.0)
 
     def scale(self, scale_x, scale_y):
         self.multiply(scale_x, scale_x, 0.0, scale_y, scale_y, 0.0)

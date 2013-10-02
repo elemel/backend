@@ -95,10 +95,17 @@ class ShipComponent(Component):
     def __init__(self, player_index=-1, x=0.0, y=0.0, angle=0.0):
         super(ShipComponent, self).__init__()
         self.player_index = player_index
+
         self.x = x
         self.y = y
         self.angle = angle
         self.transform = Transform()
+
+        self.dx = 0.0
+        self.dy = 0.0
+        self.max_thrust_acceleration = 10.0
+        self.max_turn_velocity = 2.0 * math.pi
+
         self.sprite_component = None
 
     def create(self):
@@ -111,10 +118,27 @@ class ShipComponent(Component):
         self.entity.game.update_handlers.remove(self)
 
     def update(self, dt):
-        self.angle += dt
+        thrust_control = 0.0
+        turn_control = 0.0
+
+        if self.player_index != -1:
+            controls = self.entity.game.controls[self.player_index]
+            turn_control = float(controls[1]) - float(controls[3])
+            thrust_control = float(controls[0])
+
+        turn_velocity = turn_control * self.max_turn_velocity
+        thrust_acceleration = thrust_control * self.max_thrust_acceleration
+
+        self.angle += dt * turn_velocity
+        self.dx += dt * math.cos(self.angle) * thrust_acceleration
+        self.dy += dt * math.sin(self.angle) * thrust_acceleration
+
+        self.x += self.dx * dt
+        self.y += self.dy * dt
+
         self.transform.reset()
-        self.transform.translate(self.x, self.y)
         self.transform.rotate(self.angle)
+        self.transform.translate(self.x, self.y)
 
     def draw(self):
         self.sprite_component.sprites[0].transform = self.transform
@@ -179,16 +203,17 @@ class Game(pyglet.window.Window):
     def draw_hud(self):
         pass
 
-def create_ship_entity():
+def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0):
     entity = Entity()
 
     sprite_component = SpriteComponent()
-    vertices = generate_circle_vertices(3, angle=(0.5 * math.pi))
+    vertices = generate_circle_vertices(3)
     sprite = PolygonSprite(vertices)
     sprite_component.add_sprite(sprite)
     entity.add_component(sprite_component)
 
-    entity.add_component(ShipComponent())
+    entity.add_component(ShipComponent(player_index=player_index, x=x, y=y,
+                                       angle=angle))
     return entity
 
 def create_boulder_entity(x=0.0, y=0.0):
@@ -206,7 +231,7 @@ def create_boulder_entity(x=0.0, y=0.0):
 
 if __name__ == '__main__':
     game = Game()
-    game.add_entity(create_ship_entity())
+    game.add_entity(create_ship_entity(player_index=0, angle=(0.5 * math.pi)))
     game.add_entity(create_boulder_entity(x=3.0))
 
     pyglet.clock.schedule(game.update)
