@@ -1,4 +1,4 @@
-from backend.color import WHITE
+from backend.color import CYAN, WHITE, YELLOW
 from backend.maths import Transform
 from backend.sprite import PolygonSprite
 
@@ -203,12 +203,12 @@ class Game(pyglet.window.Window):
     def draw_hud(self):
         pass
 
-def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0):
+def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     entity = Entity()
 
     sprite_component = SpriteComponent()
     vertices = generate_circle_vertices(3)
-    sprite = PolygonSprite(vertices)
+    sprite = PolygonSprite(vertices, color=color)
     sprite_component.add_sprite(sprite)
     entity.add_component(sprite_component)
 
@@ -231,8 +231,11 @@ def create_boulder_entity(x=0.0, y=0.0):
 
 if __name__ == '__main__':
     game = Game()
-    game.add_entity(create_ship_entity(player_index=0, angle=(0.5 * math.pi)))
-    game.add_entity(create_boulder_entity(x=3.0))
+    game.add_entity(create_ship_entity(player_index=0, x=-2.0,
+                                       angle=(0.5 * math.pi), color=YELLOW))
+    game.add_entity(create_ship_entity(player_index=1, x=2.0,
+                                       angle=(0.5 * math.pi), color=CYAN))
+    game.add_entity(create_boulder_entity(y=2.0))
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()
