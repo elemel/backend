@@ -125,17 +125,10 @@ class SpriteComponent(Component):
     def delete(self):
         self.sprite.batch = None
 
-class ShipComponent(Component):
-    def __init__(self, transform_component, physics_component,
-                 sprite_component, player_index):
-        super(ShipComponent, self).__init__()
-        self.player_index = player_index
-
-        self.max_thrust_acceleration = 10.0
-        self.max_turn_velocity = 2.0 * math.pi
-
+class AnimationComponent(Component):
+    def __init__(self, transform_component, sprite_component):
+        super(AnimationComponent, self).__init__()
         self.transform_component = transform_component
-        self.physics_component = physics_component
         self.sprite_component = sprite_component
 
     def create(self):
@@ -144,6 +137,29 @@ class ShipComponent(Component):
 
     def delete(self):
         self.entity.game.draw_handlers.remove(self)
+        self.entity.game.update_handlers.remove(self)
+
+    def update(self, dt):
+        pass
+
+    def draw(self):
+        self.sprite_component.sprite.transform = \
+            self.transform_component.transform
+
+class ShipComponent(Component):
+    def __init__(self, physics_component, player_index):
+        super(ShipComponent, self).__init__()
+        self.player_index = player_index
+
+        self.max_thrust_acceleration = 10.0
+        self.max_turn_velocity = 2.0 * math.pi
+
+        self.physics_component = physics_component
+
+    def create(self):
+        self.entity.game.update_handlers.append(self)
+
+    def delete(self):
         self.entity.game.update_handlers.remove(self)
 
     def update(self, dt):
@@ -162,10 +178,6 @@ class ShipComponent(Component):
             turn_control * self.max_turn_velocity
         self.physics_component.acceleration = \
             thrust_control * self.max_thrust_acceleration * direction
-
-    def draw(self):
-        self.sprite_component.sprite.transform = \
-            self.transform_component.transform
 
 class Game(pyglet.window.Window):
     def __init__(self):
@@ -252,8 +264,11 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     sprite_component = SpriteComponent(sprite)
     entity.add_component(sprite_component)
 
-    ship_component = ShipComponent(transform_component, physics_component,
-                                   sprite_component, player_index)
+    animation_component = AnimationComponent(transform_component,
+                                             sprite_component)
+    entity.add_component(animation_component)
+
+    ship_component = ShipComponent(physics_component, player_index)
     entity.add_component(ship_component)
     return entity
 
