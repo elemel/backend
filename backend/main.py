@@ -1,5 +1,5 @@
 from backend.color import CYAN, WHITE, YELLOW
-from backend.maths import Transform
+from backend.maths import Transform, Vector2
 from backend.sprite import PolygonSprite
 
 import pyglet
@@ -59,7 +59,6 @@ class Entity(object):
 
     def add_component(self, component):
         self.components.append(component)
-        component.entity = self
 
     def find_component(self, cls):
         for component in self.components:
@@ -69,11 +68,52 @@ class Entity(object):
 
     def create(self):
         for component in self.components:
+            component.entity = self
             component.create()
 
     def delete(self):
         for component in reversed(self.components):
             component.delete()
+            component.entity = None
+
+class TransformComponent(Component):
+    def __init__(self):
+        super(TransformComponent, self).__init__()
+        self.transform = Transform()
+
+class PhysicsComponent(Component):
+    def __init__(self):
+        super(PhysicsComponent, self).__init__()
+
+        self.position = Vector2()
+        self.velocity = Vector2()
+        self.acceleration = Vector2()
+
+        self.angle = 0.0
+        self.angular_velocity = 0.0
+        self.angular_acceleration = 0.0
+
+        self.transform_component = None
+
+    def create(self):
+        self.transform_component = self.entity.find_component(TransformComponent)
+        self.entity.game.add_update_handler(self)
+
+    def delete(self):
+        self.entity.game.remove_update_handler(self)
+
+    def update(self, dt):
+        self.position += dt * self.velocity
+        self.velocity += dt * self.acceleration
+
+        self.angle += dt * self.angular_velocity
+        self.angular_velocity += dt * self.angular_acceleration
+
+        transform = self.transform_component.transform
+        transform.reset()
+        transform.rotate(self.angle)
+        transform.translate(*self.position)
+        self.transform_component.transform = transform
 
 class SpriteComponent(Component):
     def __init__(self):
@@ -106,10 +146,15 @@ class ShipComponent(Component):
         self.max_thrust_acceleration = 10.0
         self.max_turn_velocity = 2.0 * math.pi
 
+        self.transform_component = None
+        self.physics_component = None
         self.sprite_component = None
 
     def create(self):
+        self.transform_component = self.entity.find_component(TransformComponent)
+        self.physics_component = self.entity.find_component(PhysicsComponent)
         self.sprite_component = self.entity.find_component(SpriteComponent)
+
         self.entity.game.update_handlers.append(self)
         self.entity.game.draw_handlers.append(self)
 
@@ -126,22 +171,11 @@ class ShipComponent(Component):
             turn_control = float(controls[1]) - float(controls[3])
             thrust_control = float(controls[0])
 
-        turn_velocity = turn_control * self.max_turn_velocity
-        thrust_acceleration = thrust_control * self.max_thrust_acceleration
-
-        self.angle += dt * turn_velocity
-        self.dx += dt * math.cos(self.angle) * thrust_acceleration
-        self.dy += dt * math.sin(self.angle) * thrust_acceleration
-
-        self.x += self.dx * dt
-        self.y += self.dy * dt
-
-        self.transform.reset()
-        self.transform.rotate(self.angle)
-        self.transform.translate(self.x, self.y)
+        self.physics_component.angular_velocity = turn_control * self.max_turn_velocity
+        self.physics_component.acceleration = thrust_control * self.max_thrust_acceleration * Vector2(math.cos(self.physics_component.angle), math.sin(self.physics_component.angle))
 
     def draw(self):
-        self.sprite_component.sprites[0].transform = self.transform
+        self.sprite_component.sprites[0].transform = self.transform_component.transform
 
 class Game(pyglet.window.Window):
     def __init__(self):
@@ -153,6 +187,18 @@ class Game(pyglet.window.Window):
         self.update_handlers = []
         self.draw_handlers = []
         self.entities = []
+
+    def add_update_handler(self, handler):
+        self.update_handlers.append(handler)
+
+    def remove_update_handler(self, handler):
+        self.update_handlers.remove(handler)
+
+    def add_draw_handler(self, handler):
+        self.draw_handlers.append(handler)
+
+    def remove_draw_handler(self, handler):
+        self.draw_handlers.remove(handler)
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -205,6 +251,9 @@ class Game(pyglet.window.Window):
 
 def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     entity = Entity()
+
+    entity.add_component(TransformComponent())
+    entity.add_component(PhysicsComponent())
 
     sprite_component = SpriteComponent()
     vertices = generate_circle_vertices(3)
