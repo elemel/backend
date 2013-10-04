@@ -1,5 +1,67 @@
 import math
 
+class Vector2(object):
+    def __init__(self, x=0.0, y=0.0):
+        self.x = x
+        self.y = y
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    def __len__(self):
+        return 2
+
+    def __getitem__(self, index):
+        return [self.x, self.y][index]
+
+    def __setitem__(self, index, value):
+        values = [self.x, self.y]
+        values[index] = value
+        self.x, self.y = values
+
+    def __neg__(self):
+        return -self.x, -self.y
+
+    def __iadd__(self, other):
+        x, y = other
+        self.x += x
+        self.y += y
+        return self
+
+    def __add__(self, other):
+        x, y = other
+        return Vector2(self.x + x, self.y + y)
+
+    def __isub__(self, other):
+        x, y = other
+        self.x -= x
+        self.y -= y
+        return self
+
+    def __sub__(self, other):
+        x, y = other
+        return Vector2(self.x - x, self.y - y)
+
+    def __imul__(self, other):
+        self.x *= other
+        self.y *= other
+        return self
+
+    def __mul__(self, other):
+        return Vector2(self.x * other, self.y * other)
+
+    def __rmul__(self, other):
+        return Vector2(other * self.x, other * self.y)
+
+    def __idiv__(self, other):
+        self.x /= other
+        self.y /= other
+        return self
+
+    def __div__(self, other):
+        return Vector2(self.x / other, self.y / other)
+
 class Transform(object):
     def __init__(self, a=1.0, b=0.0, c=0.0, d=0.0, e=1.0, f=0.0):
         self.a = a
