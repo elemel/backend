@@ -126,29 +126,19 @@ class SpriteComponent(Component):
         self.sprite.batch = None
 
 class ShipComponent(Component):
-    def __init__(self, player_index=-1, x=0.0, y=0.0, angle=0.0):
+    def __init__(self, transform_component, physics_component,
+                 sprite_component, player_index):
         super(ShipComponent, self).__init__()
         self.player_index = player_index
 
-        self.x = x
-        self.y = y
-        self.angle = angle
-        self.transform = Transform()
-
-        self.dx = 0.0
-        self.dy = 0.0
         self.max_thrust_acceleration = 10.0
         self.max_turn_velocity = 2.0 * math.pi
 
-        self.transform_component = None
-        self.physics_component = None
-        self.sprite_component = None
+        self.transform_component = transform_component
+        self.physics_component = physics_component
+        self.sprite_component = sprite_component
 
     def create(self):
-        self.transform_component = self.entity.find_component(TransformComponent)
-        self.physics_component = self.entity.find_component(PhysicsComponent)
-        self.sprite_component = self.entity.find_component(SpriteComponent)
-
         self.entity.game.update_handlers.append(self)
         self.entity.game.draw_handlers.append(self)
 
@@ -248,15 +238,17 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
 
     transform_component = TransformComponent()
     entity.add_component(transform_component)
-    entity.add_component(PhysicsComponent(transform_component))
+    physics_component = PhysicsComponent(transform_component)
+    entity.add_component(physics_component)
 
     vertices = generate_circle_vertices(3)
     sprite = PolygonSprite(vertices, color=color)
     sprite_component = SpriteComponent(sprite)
     entity.add_component(sprite_component)
 
-    entity.add_component(ShipComponent(player_index=player_index, x=x, y=y,
-                                       angle=angle))
+    ship_component = ShipComponent(transform_component, physics_component,
+                                   sprite_component, player_index)
+    entity.add_component(ship_component)
     return entity
 
 def create_boulder_entity(x=0.0, y=0.0):
