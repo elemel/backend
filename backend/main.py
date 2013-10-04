@@ -116,20 +116,15 @@ class PhysicsComponent(Component):
         self.transform_component.transform = transform
 
 class SpriteComponent(Component):
-    def __init__(self):
+    def __init__(self, sprite):
         super(SpriteComponent, self).__init__()
-        self.sprites = []
-
-    def add_sprite(self, sprite):
-        self.sprites.append(sprite)
+        self.sprite = sprite
 
     def create(self):
-        for sprite in self.sprites:
-            sprite.batch = self.entity.game.batch
+        self.sprite.batch = self.entity.game.batch
 
     def delete(self):
-        for sprite in reversed(self.sprites):
-            sprite.batch = None
+        self.sprite.batch = None
 
 class ShipComponent(Component):
     def __init__(self, player_index=-1, x=0.0, y=0.0, angle=0.0):
@@ -175,7 +170,7 @@ class ShipComponent(Component):
         self.physics_component.acceleration = thrust_control * self.max_thrust_acceleration * Vector2(math.cos(self.physics_component.angle), math.sin(self.physics_component.angle))
 
     def draw(self):
-        self.sprite_component.sprites[0].transform = self.transform_component.transform
+        self.sprite_component.sprite.transform = self.transform_component.transform
 
 class Game(pyglet.window.Window):
     def __init__(self):
@@ -255,10 +250,9 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     entity.add_component(TransformComponent())
     entity.add_component(PhysicsComponent())
 
-    sprite_component = SpriteComponent()
     vertices = generate_circle_vertices(3)
     sprite = PolygonSprite(vertices, color=color)
-    sprite_component.add_sprite(sprite)
+    sprite_component = SpriteComponent(sprite)
     entity.add_component(sprite_component)
 
     entity.add_component(ShipComponent(player_index=player_index, x=x, y=y,
@@ -268,12 +262,11 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
 def create_boulder_entity(x=0.0, y=0.0):
     entity = Entity()
 
-    sprite_component = SpriteComponent()
     vertices = generate_circle_vertices(6)
     transform = Transform()
     transform.translate(x, y)
     sprite = PolygonSprite(vertices, transform=transform)
-    sprite_component.add_sprite(sprite)
+    sprite_component = SpriteComponent(sprite)
     entity.add_component(sprite_component)
 
     return entity
