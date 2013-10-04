@@ -82,7 +82,7 @@ class TransformComponent(Component):
         self.transform = Transform()
 
 class PhysicsComponent(Component):
-    def __init__(self):
+    def __init__(self, transform_component):
         super(PhysicsComponent, self).__init__()
 
         self.position = Vector2()
@@ -93,10 +93,9 @@ class PhysicsComponent(Component):
         self.angular_velocity = 0.0
         self.angular_acceleration = 0.0
 
-        self.transform_component = None
+        self.transform_component = transform_component
 
     def create(self):
-        self.transform_component = self.entity.find_component(TransformComponent)
         self.entity.game.add_update_handler(self)
 
     def delete(self):
@@ -247,8 +246,9 @@ class Game(pyglet.window.Window):
 def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     entity = Entity()
 
-    entity.add_component(TransformComponent())
-    entity.add_component(PhysicsComponent())
+    transform_component = TransformComponent()
+    entity.add_component(transform_component)
+    entity.add_component(PhysicsComponent(transform_component))
 
     vertices = generate_circle_vertices(3)
     sprite = PolygonSprite(vertices, color=color)
