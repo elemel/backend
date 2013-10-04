@@ -155,11 +155,17 @@ class ShipComponent(Component):
             turn_control = float(controls[1]) - float(controls[3])
             thrust_control = float(controls[0])
 
-        self.physics_component.angular_velocity = turn_control * self.max_turn_velocity
-        self.physics_component.acceleration = thrust_control * self.max_thrust_acceleration * Vector2(math.cos(self.physics_component.angle), math.sin(self.physics_component.angle))
+        angle = self.physics_component.angle
+        direction = Vector2(math.cos(angle), math.sin(angle))
+
+        self.physics_component.angular_velocity = \
+            turn_control * self.max_turn_velocity
+        self.physics_component.acceleration = \
+            thrust_control * self.max_thrust_acceleration * direction
 
     def draw(self):
-        self.sprite_component.sprite.transform = self.transform_component.transform
+        self.sprite_component.sprite.transform = \
+            self.transform_component.transform
 
 class Game(pyglet.window.Window):
     def __init__(self):
