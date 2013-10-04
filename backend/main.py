@@ -146,9 +146,9 @@ class AnimationComponent(Component):
         self.sprite_component.sprite.transform = \
             self.transform_component.transform
 
-class ShipComponent(Component):
+class ShipControlComponent(Component):
     def __init__(self, physics_component, player_index):
-        super(ShipComponent, self).__init__()
+        super(ShipControlComponent, self).__init__()
         self.player_index = player_index
 
         self.max_thrust_acceleration = 10.0
@@ -258,6 +258,8 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     entity.add_component(transform_component)
     physics_component = PhysicsComponent(transform_component)
     entity.add_component(physics_component)
+    control_component = ShipControlComponent(physics_component, player_index)
+    entity.add_component(control_component)
 
     vertices = generate_circle_vertices(3)
     sprite = PolygonSprite(vertices, color=color)
@@ -268,8 +270,6 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
                                              sprite_component)
     entity.add_component(animation_component)
 
-    ship_component = ShipComponent(physics_component, player_index)
-    entity.add_component(ship_component)
     return entity
 
 def create_boulder_entity(x=0.0, y=0.0):
