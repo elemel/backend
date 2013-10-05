@@ -304,8 +304,14 @@ class Game(pyglet.window.Window):
         pass
 
 class ShipEntityCreator(object):
-    def __init__(self, update_phase, draw_phase, key_state_handler):
-        self._update_phase = update_phase
+    def __init__(self, input_update_phase, control_update_phase,
+                 physics_update_phase, animation_update_phase, draw_phase,
+                 key_state_handler):
+        self._input_update_phase = input_update_phase
+        self._control_update_phase = control_update_phase
+        self._physics_update_phase = physics_update_phase
+        self._animation_update_phase = animation_update_phase
+
         self._draw_phase = draw_phase
         self._key_state_handler = key_state_handler
 
@@ -315,11 +321,12 @@ class ShipEntityCreator(object):
 
         transform_component = TransformComponent()
         entity.add_component(transform_component)
-        physics_component = PhysicsComponent(transform_component, update_phase,
+        physics_component = PhysicsComponent(transform_component,
+                                             self._physics_update_phase,
                                              position=position, angle=angle)
         entity.add_component(physics_component)
         control_component = ShipControlComponent(physics_component,
-                                                 update_phase)
+                                                 self._control_update_phase)
         entity.add_component(control_component)
 
         vertices = generate_circle_vertices(3)
@@ -329,10 +336,11 @@ class ShipEntityCreator(object):
 
         animation_component = AnimationComponent(transform_component,
                                                  sprite_component,
-                                                 update_phase, draw_phase)
+                                                 self._animation_update_phase,
+                                                 self._draw_phase)
         entity.add_component(animation_component)
 
-        input_component = ShipKeyboardInputComponent(self._update_phase,
+        input_component = ShipKeyboardInputComponent(self._input_update_phase,
                                                      control_component,
                                                      self._key_state_handler,
                                                      keys)
@@ -341,9 +349,6 @@ class ShipEntityCreator(object):
         return entity
 
 class BoulderEntityCreator(object):
-    def __init__(self, draw_phase):
-        self._draw_phase = draw_phase
-
     def create(self, position=(0.0, 0.0)):
         entity = Entity()
 
@@ -356,19 +361,28 @@ class BoulderEntityCreator(object):
 
         return entity
 
-if __name__ == '__main__':
+def main():
     game = Game()
 
-    update_phase = UpdatePhase()
-    game.add_update_phase(update_phase)
+    input_update_phase = UpdatePhase()
+    control_update_phase = UpdatePhase()
+    physics_update_phase = UpdatePhase()
+    animation_update_phase = UpdatePhase()
+
+    game.add_update_phase(input_update_phase)
+    game.add_update_phase(control_update_phase)
+    game.add_update_phase(physics_update_phase)
+    game.add_update_phase(animation_update_phase)
 
     draw_phase = DrawPhase()
     game.add_draw_phase(draw_phase)
 
-    ship_entity_creator = ShipEntityCreator(update_phase,
-                                            draw_phase,
-                                            game.key_state_handler)
-    boulder_entity_creator = BoulderEntityCreator(draw_phase)
+    ship_entity_creator = ShipEntityCreator(input_update_phase,
+                                            control_update_phase,
+                                            physics_update_phase,
+                                            animation_update_phase,
+                                            draw_phase, game.key_state_handler)
+    boulder_entity_creator = BoulderEntityCreator()
 
     ship_entity_1 = ship_entity_creator.create(position=(-2.0, 0.0),
                                                angle=(0.5 * math.pi),
@@ -387,3 +401,6 @@ if __name__ == '__main__':
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()
+
+if __name__ == '__main__':
+    main()
