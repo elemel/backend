@@ -17,7 +17,7 @@ KEYS = {
     key.A: (0, LEFT),
     key.S: (0, DOWN),
     key.D: (0, RIGHT),
-    
+
     key.UP: (1, UP),
     key.LEFT: (1, LEFT),
     key.DOWN: (1, DOWN),
@@ -105,16 +105,18 @@ class TransformComponent(Component):
         self.transform = Transform()
 
 class PhysicsComponent(Component):
-    def __init__(self, transform_component, update_phase):
+    def __init__(self, transform_component, update_phase, position=(0.0, 0.0),
+                 velocity=(0.0, 0.0), acceleration=(0.0, 0.0), angle=0.0,
+                 angular_velocity=0.0, angular_acceleration=0.0):
         super(PhysicsComponent, self).__init__()
 
-        self.position = Vector2()
-        self.velocity = Vector2()
-        self.acceleration = Vector2()
+        self.position = Vector2(*position)
+        self.velocity = Vector2(*velocity)
+        self.acceleration = Vector2(*acceleration)
 
-        self.angle = 0.0
-        self.angular_velocity = 0.0
-        self.angular_acceleration = 0.0
+        self.angle = angle
+        self.angular_velocity = angular_velocity
+        self.angular_acceleration = angular_acceleration
 
         self.transform_component = transform_component
         self.update_phase = update_phase
@@ -279,29 +281,35 @@ class Game(pyglet.window.Window):
     def draw_hud(self):
         pass
 
-def create_ship_entity(update_phase, draw_phase, player_index=-1, x=0.0, y=0.0,
-                       angle=0.0, color=WHITE):
-    entity = Entity()
+class ShipEntityCreator(object):
+    def __init__(self, update_phase, draw_phase):
+        self._update_phase = update_phase
+        self._draw_phase = draw_phase
 
-    transform_component = TransformComponent()
-    entity.add_component(transform_component)
-    physics_component = PhysicsComponent(transform_component, update_phase)
-    entity.add_component(physics_component)
-    control_component = ShipControlComponent(physics_component, player_index,
-                                             update_phase)
-    entity.add_component(control_component)
+    def create(self, player_index=-1, position=(0.0, 0.0), angle=0.0,
+               color=WHITE):
+        entity = Entity()
 
-    vertices = generate_circle_vertices(3)
-    sprite = PolygonSprite(vertices, color=color)
-    sprite_component = SpriteComponent(sprite)
-    entity.add_component(sprite_component)
+        transform_component = TransformComponent()
+        entity.add_component(transform_component)
+        physics_component = PhysicsComponent(transform_component, update_phase,
+                                             position=position, angle=angle)
+        entity.add_component(physics_component)
+        control_component = ShipControlComponent(physics_component, player_index,
+                                                 update_phase)
+        entity.add_component(control_component)
 
-    animation_component = AnimationComponent(transform_component,
-                                             sprite_component, update_phase,
-                                             draw_phase)
-    entity.add_component(animation_component)
+        vertices = generate_circle_vertices(3)
+        sprite = PolygonSprite(vertices, color=color)
+        sprite_component = SpriteComponent(sprite)
+        entity.add_component(sprite_component)
 
-    return entity
+        animation_component = AnimationComponent(transform_component,
+                                                 sprite_component, update_phase,
+                                                 draw_phase)
+        entity.add_component(animation_component)
+
+        return entity
 
 def create_boulder_entity(update_phase, draw_phase, x=0.0, y=0.0):
     entity = Entity()
@@ -317,16 +325,27 @@ def create_boulder_entity(update_phase, draw_phase, x=0.0, y=0.0):
 
 if __name__ == '__main__':
     game = Game()
-    game.add_update_phase(UpdatePhase())
-    game.add_draw_phase(DrawPhase())
-    game.add_entity(create_ship_entity(game.update_phases[0],
-                                       game.draw_phases[0],
-                                       player_index=0, x=-2.0,
-                                       angle=(0.5 * math.pi), color=YELLOW))
-    game.add_entity(create_ship_entity(game.update_phases[0],
-                                       game.draw_phases[0],
-                                       player_index=1, x=2.0,
-                                       angle=(0.5 * math.pi), color=CYAN))
+
+    update_phase = UpdatePhase()
+    game.add_update_phase(update_phase)
+
+    draw_phase = DrawPhase()
+    game.add_draw_phase(draw_phase)
+
+    ship_entity_creator = ShipEntityCreator(update_phase, draw_phase)
+
+    ship_entity_1 = ship_entity_creator.create(player_index=0,
+                                               position=(-2.0, 0.0),
+                                               angle=(0.5 * math.pi),
+                                               color=YELLOW)
+    game.add_entity(ship_entity_1)
+
+    ship_entity_2 = ship_entity_creator.create(player_index=1,
+                                               position=(2.0, 0.0),
+                                               angle=(0.5 * math.pi),
+                                               color=CYAN)
+    game.add_entity(ship_entity_2)
+
     game.add_entity(create_boulder_entity(game.update_phases[0],
                                           game.draw_phases[0], y=2.0))
 
