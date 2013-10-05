@@ -311,17 +311,21 @@ class ShipEntityCreator(object):
 
         return entity
 
-def create_boulder_entity(update_phase, draw_phase, x=0.0, y=0.0):
-    entity = Entity()
+class BoulderEntityCreator(object):
+    def __init__(self, draw_phase):
+        self._draw_phase = draw_phase
 
-    vertices = generate_circle_vertices(6)
-    transform = Transform()
-    transform.translate(x, y)
-    sprite = PolygonSprite(vertices, transform=transform)
-    sprite_component = SpriteComponent(sprite)
-    entity.add_component(sprite_component)
+    def create(self, position=(0.0, 0.0)):
+        entity = Entity()
 
-    return entity
+        vertices = generate_circle_vertices(6)
+        transform = Transform()
+        transform.translate(*position)
+        sprite = PolygonSprite(vertices, transform=transform)
+        sprite_component = SpriteComponent(sprite)
+        entity.add_component(sprite_component)
+
+        return entity
 
 if __name__ == '__main__':
     game = Game()
@@ -333,6 +337,7 @@ if __name__ == '__main__':
     game.add_draw_phase(draw_phase)
 
     ship_entity_creator = ShipEntityCreator(update_phase, draw_phase)
+    boulder_entity_creator = BoulderEntityCreator(draw_phase)
 
     ship_entity_1 = ship_entity_creator.create(player_index=0,
                                                position=(-2.0, 0.0),
@@ -346,8 +351,8 @@ if __name__ == '__main__':
                                                color=CYAN)
     game.add_entity(ship_entity_2)
 
-    game.add_entity(create_boulder_entity(game.update_phases[0],
-                                          game.draw_phases[0], y=2.0))
+    boulder_entity = boulder_entity_creator.create(position=(0.0, 2.0))
+    game.add_entity(boulder_entity)
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()
