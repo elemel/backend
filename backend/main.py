@@ -1,5 +1,5 @@
 from backend.color import CYAN, WHITE, YELLOW
-from backend.maths import Transform, Vector2
+from backend.maths import generate_circle_vertices, Transform, Vector2
 from backend.sprite import PolygonSprite
 
 import pyglet
@@ -23,11 +23,6 @@ KEYS = {
     key.DOWN: (1, DOWN),
     key.RIGHT: (1, RIGHT),
 }
-
-def generate_circle_vertices(count, x=0.0, y=0.0, radius=1.0, angle=0.0):
-    for i in xrange(count):
-        a = angle + float(i) / float(count) * 2.0 * math.pi
-        yield x + radius * math.cos(a), y + radius * math.sin(a)
 
 def fill_triangle(x1, y1, x2, y2, x3, y3, color=WHITE):
     pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES,

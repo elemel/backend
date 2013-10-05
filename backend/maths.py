@@ -1,5 +1,10 @@
 import math
 
+def generate_circle_vertices(count, x=0.0, y=0.0, radius=1.0, angle=0.0):
+    for i in xrange(count):
+        a = angle + float(i) / float(count) * 2.0 * math.pi
+        yield x + radius * math.cos(a), y + radius * math.sin(a)
+
 class Vector2(object):
     def __init__(self, x=0.0, y=0.0):
         self.x = x
