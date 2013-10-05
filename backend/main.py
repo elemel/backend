@@ -295,8 +295,8 @@ class ShipEntityCreator(object):
         physics_component = PhysicsComponent(transform_component, update_phase,
                                              position=position, angle=angle)
         entity.add_component(physics_component)
-        control_component = ShipControlComponent(physics_component, player_index,
-                                                 update_phase)
+        control_component = ShipControlComponent(physics_component,
+                                                 player_index, update_phase)
         entity.add_component(control_component)
 
         vertices = generate_circle_vertices(3)
@@ -305,8 +305,8 @@ class ShipEntityCreator(object):
         entity.add_component(sprite_component)
 
         animation_component = AnimationComponent(transform_component,
-                                                 sprite_component, update_phase,
-                                                 draw_phase)
+                                                 sprite_component,
+                                                 update_phase, draw_phase)
         entity.add_component(animation_component)
 
         return entity
