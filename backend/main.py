@@ -37,6 +37,34 @@ def fill_polygon(vertices, color=WHITE):
                          ('v2f', tuple(vertex_data)),
                          ('c4B', len(vertices) * color))
 
+class UpdatePhase(object):
+    def __init__(self):
+        self._handlers = []
+
+    def add_handler(self, handler):
+        self._handlers.append(handler)
+
+    def remove_handler(handler):
+        self._handlers.remove(handler)
+
+    def update(self, dt):
+        for handler in self._handlers:
+            handler.update(dt)
+
+class DrawPhase(object):
+    def __init__(self):
+        self._handlers = []
+
+    def add_handler(self, handler):
+        self._handlers.append(handler)
+
+    def remove_handler(handler):
+        self._handlers.remove(handler)
+
+    def draw(self):
+        for handler in self._handlers:
+            handler.draw()
+
 class Component(object):
     def __init__(self):
         self.entity = None
@@ -77,7 +105,7 @@ class TransformComponent(Component):
         self.transform = Transform()
 
 class PhysicsComponent(Component):
-    def __init__(self, transform_component):
+    def __init__(self, transform_component, update_phase):
         super(PhysicsComponent, self).__init__()
 
         self.position = Vector2()
@@ -89,12 +117,13 @@ class PhysicsComponent(Component):
         self.angular_acceleration = 0.0
 
         self.transform_component = transform_component
+        self.update_phase = update_phase
 
     def create(self):
-        self.entity.game.add_update_handler(self)
+        self.update_phase.add_handler(self)
 
     def delete(self):
-        self.entity.game.remove_update_handler(self)
+        self.update_phase.add_handler(self)
 
     def update(self, dt):
         self.position += dt * self.velocity
@@ -121,18 +150,21 @@ class SpriteComponent(Component):
         self.sprite.batch = None
 
 class AnimationComponent(Component):
-    def __init__(self, transform_component, sprite_component):
+    def __init__(self, transform_component, sprite_component, update_phase,
+                 draw_phase):
         super(AnimationComponent, self).__init__()
         self.transform_component = transform_component
         self.sprite_component = sprite_component
+        self.update_phase = update_phase
+        self.draw_phase = draw_phase
 
     def create(self):
-        self.entity.game.update_handlers.append(self)
-        self.entity.game.draw_handlers.append(self)
+        self.update_phase.add_handler(self)
+        self.draw_phase.add_handler(self)
 
     def delete(self):
-        self.entity.game.draw_handlers.remove(self)
-        self.entity.game.update_handlers.remove(self)
+        self.draw_phase.remove_handler(self)
+        self.update_phase.remove_handler(self)
 
     def update(self, dt):
         pass
@@ -142,7 +174,7 @@ class AnimationComponent(Component):
             self.transform_component.transform
 
 class ShipControlComponent(Component):
-    def __init__(self, physics_component, player_index):
+    def __init__(self, physics_component, player_index, update_phase):
         super(ShipControlComponent, self).__init__()
         self.player_index = player_index
 
@@ -150,12 +182,13 @@ class ShipControlComponent(Component):
         self.max_turn_velocity = 2.0 * math.pi
 
         self.physics_component = physics_component
+        self.update_phase = update_phase
 
     def create(self):
-        self.entity.game.update_handlers.append(self)
+        self.update_phase.add_handler(self)
 
     def delete(self):
-        self.entity.game.update_handlers.remove(self)
+        self.update_phase.remove_handler(self)
 
     def update(self, dt):
         thrust_control = 0.0
@@ -181,21 +214,21 @@ class Game(pyglet.window.Window):
         self.time = 0.0
         self.camera_scale = 0.1
         self.batch = pyglet.graphics.Batch()
-        self.update_handlers = []
-        self.draw_handlers = []
+        self.update_phases = []
+        self.draw_phases = []
         self.entities = []
 
-    def add_update_handler(self, handler):
-        self.update_handlers.append(handler)
+    def add_update_phase(self, phase):
+        self.update_phases.append(phase)
 
-    def remove_update_handler(self, handler):
-        self.update_handlers.remove(handler)
+    def remove_update_phase(self, phase):
+        self.update_phases.remove(phase)
 
-    def add_draw_handler(self, handler):
-        self.draw_handlers.append(handler)
+    def add_draw_phase(self, phase):
+        self.draw_phases.append(phase)
 
-    def remove_draw_handler(self, handler):
-        self.draw_handlers.remove(handler)
+    def remove_draw_phase(self, phase):
+        self.draw_phases.remove(phase)
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -221,8 +254,8 @@ class Game(pyglet.window.Window):
 
     def update(self, dt):
         self.time += dt
-        for handler in self.update_handlers:
-            handler.update(dt)
+        for phase in self.update_phases:
+            phase.update(dt)
 
     def on_draw(self):
         self.clear()
@@ -239,21 +272,23 @@ class Game(pyglet.window.Window):
         glOrtho(-half_width, half_width, -half_height, half_height, -1.0, 1.0)
         glMatrixMode(GL_MODELVIEW)
 
-        for handler in self.draw_handlers:
-            handler.draw()
+        for phase in self.draw_phases:
+            phase.draw()
         self.batch.draw()
 
     def draw_hud(self):
         pass
 
-def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
+def create_ship_entity(update_phase, draw_phase, player_index=-1, x=0.0, y=0.0,
+                       angle=0.0, color=WHITE):
     entity = Entity()
 
     transform_component = TransformComponent()
     entity.add_component(transform_component)
-    physics_component = PhysicsComponent(transform_component)
+    physics_component = PhysicsComponent(transform_component, update_phase)
     entity.add_component(physics_component)
-    control_component = ShipControlComponent(physics_component, player_index)
+    control_component = ShipControlComponent(physics_component, player_index,
+                                             update_phase)
     entity.add_component(control_component)
 
     vertices = generate_circle_vertices(3)
@@ -262,12 +297,13 @@ def create_ship_entity(player_index=-1, x=0.0, y=0.0, angle=0.0, color=WHITE):
     entity.add_component(sprite_component)
 
     animation_component = AnimationComponent(transform_component,
-                                             sprite_component)
+                                             sprite_component, update_phase,
+                                             draw_phase)
     entity.add_component(animation_component)
 
     return entity
 
-def create_boulder_entity(x=0.0, y=0.0):
+def create_boulder_entity(update_phase, draw_phase, x=0.0, y=0.0):
     entity = Entity()
 
     vertices = generate_circle_vertices(6)
@@ -281,11 +317,18 @@ def create_boulder_entity(x=0.0, y=0.0):
 
 if __name__ == '__main__':
     game = Game()
-    game.add_entity(create_ship_entity(player_index=0, x=-2.0,
+    game.add_update_phase(UpdatePhase())
+    game.add_draw_phase(DrawPhase())
+    game.add_entity(create_ship_entity(game.update_phases[0],
+                                       game.draw_phases[0],
+                                       player_index=0, x=-2.0,
                                        angle=(0.5 * math.pi), color=YELLOW))
-    game.add_entity(create_ship_entity(player_index=1, x=2.0,
+    game.add_entity(create_ship_entity(game.update_phases[0],
+                                       game.draw_phases[0],
+                                       player_index=1, x=2.0,
                                        angle=(0.5 * math.pi), color=CYAN))
-    game.add_entity(create_boulder_entity(y=2.0))
+    game.add_entity(create_boulder_entity(game.update_phases[0],
+                                          game.draw_phases[0], y=2.0))
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()
