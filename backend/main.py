@@ -7,22 +7,12 @@ from pyglet.window import key
 from pyglet.gl import *
 import math
 
-UP = 0
-LEFT = 1
-DOWN = 2
-RIGHT = 3
-
-KEYS = {
-    key.W: (0, UP),
-    key.A: (0, LEFT),
-    key.S: (0, DOWN),
-    key.D: (0, RIGHT),
-
-    key.UP: (1, UP),
-    key.LEFT: (1, LEFT),
-    key.DOWN: (1, DOWN),
-    key.RIGHT: (1, RIGHT),
-}
+PLAYER_SHIP_KEYS = dict(left=[key.A, key.LEFT], right=[key.D, key.RIGHT],
+                        thrust=[key.W, key.UP], fire=[key.S, key.DOWN])
+PLAYER_1_SHIP_KEYS = dict(left=[key.A], right=[key.D], thrust=[key.W],
+                          fire=[key.S])
+PLAYER_2_SHIP_KEYS = dict(left=[key.LEFT], right=[key.RIGHT],
+                          thrust=[key.UP], fire=[key.DOWN])
 
 def fill_triangle(x1, y1, x2, y2, x3, y3, color=WHITE):
     pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES,
@@ -98,6 +88,47 @@ class Entity(object):
         for component in reversed(self.components):
             component.delete()
             component.entity = None
+
+class Keyboard(object):
+    def __init__(self):
+        self.pressed_keys = set()
+
+class ShipKeyboardInputComponent(Component):
+    def __init__(self, update_phase, control_component, key_state_handler,
+                 keys=PLAYER_SHIP_KEYS):
+        super(ShipKeyboardInputComponent, self).__init__()
+
+        self._update_phase = update_phase
+        self._control_component = control_component
+        self._key_state_handler = key_state_handler
+
+        self._left_keys = list(keys['left'])
+        self._right_keys = list(keys['right'])
+        self._thrust_keys = list(keys['thrust'])
+        self._fire_keys = list(keys['fire'])
+
+    def create(self):
+        self._update_phase.add_handler(self)
+
+    def delete(self):
+        self._update_phase.remove_handler(self)
+
+    def update(self, dt):
+        left_control = self.get_control(self._left_keys)
+        right_control = self.get_control(self._right_keys)
+        thrust_control = self.get_control(self._thrust_keys)
+        fire_control = self.get_control(self._fire_keys)
+
+        turn_control = left_control - right_control
+
+        self._control_component.turn_control = turn_control
+        self._control_component.thrust_control = thrust_control
+
+    def get_control(self, keys):
+        for key in keys:
+            if self._key_state_handler[key]:
+                return 1.0
+        return 0.0
 
 class TransformComponent(Component):
     def __init__(self):
@@ -176,15 +207,17 @@ class AnimationComponent(Component):
             self.transform_component.transform
 
 class ShipControlComponent(Component):
-    def __init__(self, physics_component, player_index, update_phase):
+    def __init__(self, physics_component, update_phase):
         super(ShipControlComponent, self).__init__()
-        self.player_index = player_index
+
+        self.physics_component = physics_component
+        self.update_phase = update_phase
 
         self.max_thrust_acceleration = 10.0
         self.max_turn_velocity = 2.0 * math.pi
 
-        self.physics_component = physics_component
-        self.update_phase = update_phase
+        self.turn_control = 0.0
+        self.thrust_control = 0.0
 
     def create(self):
         self.update_phase.add_handler(self)
@@ -193,32 +226,24 @@ class ShipControlComponent(Component):
         self.update_phase.remove_handler(self)
 
     def update(self, dt):
-        thrust_control = 0.0
-        turn_control = 0.0
-
-        if self.player_index != -1:
-            controls = self.entity.game.controls[self.player_index]
-            turn_control = float(controls[1]) - float(controls[3])
-            thrust_control = float(controls[0])
-
         angle = self.physics_component.angle
         direction = Vector2(math.cos(angle), math.sin(angle))
 
         self.physics_component.angular_velocity = \
-            turn_control * self.max_turn_velocity
+            self.turn_control * self.max_turn_velocity
         self.physics_component.acceleration = \
-            thrust_control * self.max_thrust_acceleration * direction
+            self.thrust_control * self.max_thrust_acceleration * direction
 
 class Game(pyglet.window.Window):
     def __init__(self):
         super(Game, self).__init__(fullscreen=True)
-        self.controls = [4 * [False], 4 * [False]]
         self.time = 0.0
         self.camera_scale = 0.1
         self.batch = pyglet.graphics.Batch()
         self.update_phases = []
         self.draw_phases = []
         self.entities = []
+        self.key_state_handler = pyglet.window.key.KeyStateHandler()
 
     def add_update_phase(self, phase):
         self.update_phases.append(phase)
@@ -243,16 +268,13 @@ class Game(pyglet.window.Window):
         self.entities.remove(entity)
 
     def on_key_press(self, symbol, modifiers):
+        self.key_state_handler.on_key_press(symbol, modifiers)
+
         if symbol == key.ESCAPE:
             self.close()
-        if symbol in KEYS:
-            player_index, control_index = KEYS[symbol]
-            self.controls[player_index][control_index] = True
 
     def on_key_release(self, symbol, modifiers):
-        if symbol in KEYS:
-            player_index, control_index = KEYS[symbol]
-            self.controls[player_index][control_index] = False
+        self.key_state_handler.on_key_release(symbol, modifiers)
 
     def update(self, dt):
         self.time += dt
@@ -282,12 +304,13 @@ class Game(pyglet.window.Window):
         pass
 
 class ShipEntityCreator(object):
-    def __init__(self, update_phase, draw_phase):
+    def __init__(self, update_phase, draw_phase, key_state_handler):
         self._update_phase = update_phase
         self._draw_phase = draw_phase
+        self._key_state_handler = key_state_handler
 
-    def create(self, player_index=-1, position=(0.0, 0.0), angle=0.0,
-               color=WHITE):
+    def create(self, position=(0.0, 0.0), angle=0.0, color=WHITE,
+               keys=PLAYER_SHIP_KEYS):
         entity = Entity()
 
         transform_component = TransformComponent()
@@ -296,7 +319,7 @@ class ShipEntityCreator(object):
                                              position=position, angle=angle)
         entity.add_component(physics_component)
         control_component = ShipControlComponent(physics_component,
-                                                 player_index, update_phase)
+                                                 update_phase)
         entity.add_component(control_component)
 
         vertices = generate_circle_vertices(3)
@@ -308,6 +331,12 @@ class ShipEntityCreator(object):
                                                  sprite_component,
                                                  update_phase, draw_phase)
         entity.add_component(animation_component)
+
+        input_component = ShipKeyboardInputComponent(self._update_phase,
+                                                     control_component,
+                                                     self._key_state_handler,
+                                                     keys)
+        entity.add_component(input_component)
 
         return entity
 
@@ -336,19 +365,21 @@ if __name__ == '__main__':
     draw_phase = DrawPhase()
     game.add_draw_phase(draw_phase)
 
-    ship_entity_creator = ShipEntityCreator(update_phase, draw_phase)
+    ship_entity_creator = ShipEntityCreator(update_phase,
+                                            draw_phase,
+                                            game.key_state_handler)
     boulder_entity_creator = BoulderEntityCreator(draw_phase)
 
-    ship_entity_1 = ship_entity_creator.create(player_index=0,
-                                               position=(-2.0, 0.0),
+    ship_entity_1 = ship_entity_creator.create(position=(-2.0, 0.0),
                                                angle=(0.5 * math.pi),
-                                               color=YELLOW)
+                                               color=YELLOW,
+                                               keys=PLAYER_1_SHIP_KEYS)
     game.add_entity(ship_entity_1)
 
-    ship_entity_2 = ship_entity_creator.create(player_index=1,
-                                               position=(2.0, 0.0),
+    ship_entity_2 = ship_entity_creator.create(position=(2.0, 0.0),
                                                angle=(0.5 * math.pi),
-                                               color=CYAN)
+                                               color=CYAN,
+                                               keys=PLAYER_2_SHIP_KEYS)
     game.add_entity(ship_entity_2)
 
     boulder_entity = boulder_entity_creator.create(position=(0.0, 2.0))
