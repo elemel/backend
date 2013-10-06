@@ -66,18 +66,9 @@ class Component(object):
         pass
 
 class Entity(object):
-    def __init__(self):
+    def __init__(self, components=[]):
+        self.components = list(components)
         self.game = None
-        self.components = []
-
-    def add_component(self, component):
-        self.components.append(component)
-
-    def find_component(self, cls):
-        for component in self.components:
-            if isinstance(component, cls):
-                return component
-        return None
 
     def create(self):
         for component in self.components:
@@ -317,49 +308,39 @@ class ShipEntityCreator(object):
 
     def create(self, position=(0.0, 0.0), angle=0.0, color=WHITE,
                keys=PLAYER_SHIP_KEYS):
-        entity = Entity()
-
         transform_component = TransformComponent()
-        entity.add_component(transform_component)
         physics_component = PhysicsComponent(transform_component,
                                              self._physics_update_phase,
                                              position=position, angle=angle)
-        entity.add_component(physics_component)
         control_component = ShipControlComponent(physics_component,
                                                  self._control_update_phase)
-        entity.add_component(control_component)
+        input_component = ShipKeyboardInputComponent(self._input_update_phase,
+                                                     control_component,
+                                                     self._key_state_handler,
+                                                     keys)
 
         vertices = generate_circle_vertices(3)
         sprite = PolygonSprite(vertices, color=color)
         sprite_component = SpriteComponent(sprite)
-        entity.add_component(sprite_component)
 
         animation_component = AnimationComponent(transform_component,
                                                  sprite_component,
                                                  self._animation_update_phase,
                                                  self._draw_phase)
-        entity.add_component(animation_component)
 
-        input_component = ShipKeyboardInputComponent(self._input_update_phase,
-                                                     control_component,
-                                                     self._key_state_handler,
-                                                     keys)
-        entity.add_component(input_component)
-
-        return entity
+        components = [transform_component, physics_component,
+                      control_component, input_component, sprite_component,
+                      animation_component]
+        return Entity(components)
 
 class BoulderEntityCreator(object):
     def create(self, position=(0.0, 0.0)):
-        entity = Entity()
-
         vertices = generate_circle_vertices(6)
         transform = Transform()
         transform.translate(*position)
         sprite = PolygonSprite(vertices, transform=transform)
         sprite_component = SpriteComponent(sprite)
-        entity.add_component(sprite_component)
-
-        return entity
+        return Entity([sprite_component])
 
 def main():
     game = Game()
