@@ -22,19 +22,6 @@ PLAYER_1_SHIP_KEYS = dict(left=[key.A], right=[key.D], thrust=[key.W],
 PLAYER_2_SHIP_KEYS = dict(left=[key.LEFT], right=[key.RIGHT],
                           thrust=[key.UP], fire=[key.DOWN])
 
-def fill_triangle(x1, y1, x2, y2, x3, y3, color=WHITE):
-    pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES,
-                         ('v2f', (x1, y1, x2, y2, x3, y3)),
-                         ('c4B', 3 * color))
-
-def fill_polygon(vertices, color=WHITE):
-    vertex_data = []
-    for v in vertices:
-        vertex_data.extend(v)
-    pyglet.graphics.draw(len(vertices), pyglet.gl.GL_POLYGON,
-                         ('v2f', tuple(vertex_data)),
-                         ('c4B', len(vertices) * color))
-
 class ShipKeyboardInputComponent(Component):
     def __init__(self, update_phase, control_component, key_state_handler,
                  keys=PLAYER_SHIP_KEYS):
