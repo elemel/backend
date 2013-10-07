@@ -226,27 +226,15 @@ class ShipControlComponent(Component):
             self.thrust_control * self.max_thrust_acceleration * direction
 
 class Game(pyglet.window.Window):
-    def __init__(self):
+    def __init__(self, update_phases=[], draw_phases=[]):
         super(Game, self).__init__(fullscreen=True)
         self.time = 0.0
         self.camera_scale = 0.1
         self.batch = pyglet.graphics.Batch()
-        self.update_phases = []
-        self.draw_phases = []
+        self.update_phases = list(update_phases)
+        self.draw_phases = list(draw_phases)
         self.entities = []
         self.key_state_handler = pyglet.window.key.KeyStateHandler()
-
-    def add_update_phase(self, phase):
-        self.update_phases.append(phase)
-
-    def remove_update_phase(self, phase):
-        self.update_phases.remove(phase)
-
-    def add_draw_phase(self, phase):
-        self.draw_phases.append(phase)
-
-    def remove_draw_phase(self, phase):
-        self.draw_phases.remove(phase)
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -350,13 +338,12 @@ def main():
     physics_update_phase = UpdatePhase()
     animation_update_phase = UpdatePhase()
 
-    game.add_update_phase(input_update_phase)
-    game.add_update_phase(control_update_phase)
-    game.add_update_phase(physics_update_phase)
-    game.add_update_phase(animation_update_phase)
-
     draw_phase = DrawPhase()
-    game.add_draw_phase(draw_phase)
+
+    update_phases = [input_update_phase, control_update_phase,
+                     physics_update_phase, animation_update_phase]
+    draw_phases = [draw_phase]
+    game = Game(update_phases, draw_phases)
 
     ship_entity_creator = ShipEntityCreator(input_update_phase,
                                             control_update_phase,
