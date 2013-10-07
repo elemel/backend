@@ -129,8 +129,6 @@ class BoulderEntityCreator(object):
         return Entity([sprite_component])
 
 def main():
-    game = Game()
-
     input_update_phase = UpdatePhase()
     control_update_phase = UpdatePhase()
     physics_update_phase = UpdatePhase()
