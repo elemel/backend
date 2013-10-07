@@ -1,6 +1,14 @@
+from backend.animation_component import AnimationComponent
 from backend.color import CYAN, WHITE, YELLOW
+from backend.component import Component
+from backend.draw_phase import DrawPhase
+from backend.entity import Entity
 from backend.maths import generate_circle_vertices, Transform, Vector2
+from backend.physics_component import PhysicsComponent
 from backend.sprite import PolygonSprite
+from backend.sprite_component import SpriteComponent
+from backend.transform_component import TransformComponent
+from backend.update_phase import UpdatePhase
 
 import pyglet
 from pyglet.window import key
@@ -26,63 +34,6 @@ def fill_polygon(vertices, color=WHITE):
     pyglet.graphics.draw(len(vertices), pyglet.gl.GL_POLYGON,
                          ('v2f', tuple(vertex_data)),
                          ('c4B', len(vertices) * color))
-
-class UpdatePhase(object):
-    def __init__(self):
-        self._handlers = []
-
-    def add_handler(self, handler):
-        self._handlers.append(handler)
-
-    def remove_handler(handler):
-        self._handlers.remove(handler)
-
-    def update(self, dt):
-        for handler in self._handlers:
-            handler.update(dt)
-
-class DrawPhase(object):
-    def __init__(self):
-        self._handlers = []
-
-    def add_handler(self, handler):
-        self._handlers.append(handler)
-
-    def remove_handler(handler):
-        self._handlers.remove(handler)
-
-    def draw(self, alpha):
-        for handler in self._handlers:
-            handler.draw(alpha)
-
-class Component(object):
-    def __init__(self):
-        self.entity = None
-
-    def create(self):
-        pass
-
-    def delete(self):
-        pass
-
-class Entity(object):
-    def __init__(self, components=[]):
-        self.components = list(components)
-        self.game = None
-
-    def create(self):
-        for component in self.components:
-            component.entity = self
-            component.create()
-
-    def delete(self):
-        for component in reversed(self.components):
-            component.delete()
-            component.entity = None
-
-class Keyboard(object):
-    def __init__(self):
-        self.pressed_keys = set()
 
 class ShipKeyboardInputComponent(Component):
     def __init__(self, update_phase, control_component, key_state_handler,
@@ -120,88 +71,6 @@ class ShipKeyboardInputComponent(Component):
             if self._key_state_handler[key]:
                 return 1.0
         return 0.0
-
-class TransformComponent(Component):
-    def __init__(self):
-        super(TransformComponent, self).__init__()
-        self.transform = Transform()
-
-class PhysicsComponent(Component):
-    def __init__(self, transform_component, update_phase, position=(0.0, 0.0),
-                 velocity=(0.0, 0.0), acceleration=(0.0, 0.0), angle=0.0,
-                 angular_velocity=0.0, angular_acceleration=0.0):
-        super(PhysicsComponent, self).__init__()
-
-        self.position = Vector2(*position)
-        self.velocity = Vector2(*velocity)
-        self.acceleration = Vector2(*acceleration)
-
-        self.angle = angle
-        self.angular_velocity = angular_velocity
-        self.angular_acceleration = angular_acceleration
-
-        self.transform_component = transform_component
-        self.update_phase = update_phase
-
-    def create(self):
-        self.update_phase.add_handler(self)
-
-    def delete(self):
-        self.update_phase.add_handler(self)
-
-    def update(self, dt):
-        self.position += dt * self.velocity
-        self.velocity += dt * self.acceleration
-
-        self.angle += dt * self.angular_velocity
-        self.angular_velocity += dt * self.angular_acceleration
-
-        transform = self.transform_component.transform
-        transform.reset()
-        transform.rotate(self.angle)
-        transform.translate(*self.position)
-        self.transform_component.transform = transform
-
-class SpriteComponent(Component):
-    def __init__(self, sprite):
-        super(SpriteComponent, self).__init__()
-        self.sprite = sprite
-
-    def create(self):
-        self.sprite.batch = self.entity.game.batch
-
-    def delete(self):
-        self.sprite.batch = None
-
-class AnimationComponent(Component):
-    def __init__(self, transform_component, sprite_component, update_phase,
-                 draw_phase):
-        super(AnimationComponent, self).__init__()
-        self.transform_component = transform_component
-        self.sprite_component = sprite_component
-        self.update_phase = update_phase
-        self.draw_phase = draw_phase
-        self.old_transform = Transform()
-        self.transform = Transform()
-        self.mixed_transform = Transform()
-
-    def create(self):
-        self.transform.assign(*self.transform_component.transform)
-        self.old_transform.assign(*self.transform)
-        self.update_phase.add_handler(self)
-        self.draw_phase.add_handler(self)
-
-    def delete(self):
-        self.draw_phase.remove_handler(self)
-        self.update_phase.remove_handler(self)
-
-    def update(self, dt):
-        self.old_transform.assign(*self.transform)
-        self.transform.assign(*self.transform_component.transform)
-
-    def draw(self, alpha):
-        self.mixed_transform.mix(self.old_transform, self.transform, alpha)
-        self.sprite_component.sprite.transform = self.mixed_transform
 
 class ShipControlComponent(Component):
     def __init__(self, physics_component, update_phase):
