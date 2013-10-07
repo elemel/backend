@@ -1,5 +1,8 @@
 import math
 
+def mix(source, target, alpha):
+    return (1.0 - alpha) * source + alpha * target
+
 def generate_circle_vertices(count, x=0.0, y=0.0, radius=1.0, angle=0.0):
     for i in xrange(count):
         a = angle + float(i) / float(count) * 2.0 * math.pi
@@ -124,3 +127,11 @@ class Transform(object):
     def transform_point(self, x, y):
         return (self.a * x + self.b * y + self.c,
                 self.d * x + self.e * y + self.f)
+
+    def mix(self, source, target, alpha):
+        self.assign(mix(source.a, target.a, alpha),
+                    mix(source.b, target.b, alpha),
+                    mix(source.c, target.c, alpha),
+                    mix(source.d, target.d, alpha),
+                    mix(source.e, target.e, alpha),
+                    mix(source.f, target.f, alpha))

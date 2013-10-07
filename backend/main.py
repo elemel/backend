@@ -51,9 +51,9 @@ class DrawPhase(object):
     def remove_handler(handler):
         self._handlers.remove(handler)
 
-    def draw(self):
+    def draw(self, alpha):
         for handler in self._handlers:
-            handler.draw()
+            handler.draw(alpha)
 
 class Component(object):
     def __init__(self):
@@ -181,8 +181,13 @@ class AnimationComponent(Component):
         self.sprite_component = sprite_component
         self.update_phase = update_phase
         self.draw_phase = draw_phase
+        self.old_transform = Transform()
+        self.transform = Transform()
+        self.mixed_transform = Transform()
 
     def create(self):
+        self.transform.assign(*self.transform_component.transform)
+        self.old_transform.assign(*self.transform)
         self.update_phase.add_handler(self)
         self.draw_phase.add_handler(self)
 
@@ -191,11 +196,12 @@ class AnimationComponent(Component):
         self.update_phase.remove_handler(self)
 
     def update(self, dt):
-        pass
+        self.old_transform.assign(*self.transform)
+        self.transform.assign(*self.transform_component.transform)
 
-    def draw(self):
-        self.sprite_component.sprite.transform = \
-            self.transform_component.transform
+    def draw(self, alpha):
+        self.mixed_transform.mix(self.old_transform, self.transform, alpha)
+        self.sprite_component.sprite.transform = self.mixed_transform
 
 class ShipControlComponent(Component):
     def __init__(self, physics_component, update_phase):
@@ -229,6 +235,8 @@ class Game(pyglet.window.Window):
     def __init__(self, update_phases=[], draw_phases=[]):
         super(Game, self).__init__(fullscreen=True)
         self.time = 0.0
+        self.world_dt = 1.0 / 10.0
+        self.world_time = 0.0
         self.camera_scale = 0.1
         self.batch = pyglet.graphics.Batch()
         self.update_phases = list(update_phases)
@@ -257,15 +265,18 @@ class Game(pyglet.window.Window):
 
     def update(self, dt):
         self.time += dt
-        for phase in self.update_phases:
-            phase.update(dt)
+        while self.time > self.world_time + self.world_dt:
+            for phase in self.update_phases:
+                phase.update(self.world_dt)
+            self.world_time += self.world_dt
 
     def on_draw(self):
+        alpha = (self.time - self.world_time) / self.world_dt
         self.clear()
-        self.draw_world()
-        self.draw_hud()
+        self.draw_world(alpha)
+        self.draw_hud(alpha)
 
-    def draw_world(self):
+    def draw_world(self, alpha):
         aspect_ratio = float(self.width) / float(self.height)
         half_width = aspect_ratio / self.camera_scale
         half_height = 1.0 / self.camera_scale
@@ -276,10 +287,10 @@ class Game(pyglet.window.Window):
         glMatrixMode(GL_MODELVIEW)
 
         for phase in self.draw_phases:
-            phase.draw()
+            phase.draw(alpha)
         self.batch.draw()
 
-    def draw_hud(self):
+    def draw_hud(self, alpha):
         pass
 
 class ShipEntityCreator(object):
