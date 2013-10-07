@@ -5,6 +5,10 @@ from backend.draw_phase import DrawPhase
 from backend.entity import Entity
 from backend.maths import generate_circle_vertices, Transform, Vector2
 from backend.physics_component import PhysicsComponent
+from backend.ship_input_component import ShipInputComponent
+from backend.ship_keys import (PLAYER_SHIP_KEYS, PLAYER_1_SHIP_KEYS,
+                               PLAYER_2_SHIP_KEYS)
+from backend.ship_control_component import ShipControlComponent
 from backend.sprite import PolygonSprite
 from backend.sprite_component import SpriteComponent
 from backend.transform_component import TransformComponent
@@ -14,78 +18,6 @@ import pyglet
 from pyglet.window import key
 from pyglet.gl import *
 import math
-
-PLAYER_SHIP_KEYS = dict(left=[key.A, key.LEFT], right=[key.D, key.RIGHT],
-                        thrust=[key.W, key.UP], fire=[key.S, key.DOWN])
-PLAYER_1_SHIP_KEYS = dict(left=[key.A], right=[key.D], thrust=[key.W],
-                          fire=[key.S])
-PLAYER_2_SHIP_KEYS = dict(left=[key.LEFT], right=[key.RIGHT],
-                          thrust=[key.UP], fire=[key.DOWN])
-
-class ShipKeyboardInputComponent(Component):
-    def __init__(self, update_phase, control_component, key_state_handler,
-                 keys=PLAYER_SHIP_KEYS):
-        super(ShipKeyboardInputComponent, self).__init__()
-
-        self._update_phase = update_phase
-        self._control_component = control_component
-        self._key_state_handler = key_state_handler
-
-        self._left_keys = list(keys['left'])
-        self._right_keys = list(keys['right'])
-        self._thrust_keys = list(keys['thrust'])
-        self._fire_keys = list(keys['fire'])
-
-    def create(self):
-        self._update_phase.add_handler(self)
-
-    def delete(self):
-        self._update_phase.remove_handler(self)
-
-    def update(self, dt):
-        left_control = self.get_control(self._left_keys)
-        right_control = self.get_control(self._right_keys)
-        thrust_control = self.get_control(self._thrust_keys)
-        fire_control = self.get_control(self._fire_keys)
-
-        turn_control = left_control - right_control
-
-        self._control_component.turn_control = turn_control
-        self._control_component.thrust_control = thrust_control
-
-    def get_control(self, keys):
-        for key in keys:
-            if self._key_state_handler[key]:
-                return 1.0
-        return 0.0
-
-class ShipControlComponent(Component):
-    def __init__(self, physics_component, update_phase):
-        super(ShipControlComponent, self).__init__()
-
-        self.physics_component = physics_component
-        self.update_phase = update_phase
-
-        self.max_thrust_acceleration = 10.0
-        self.max_turn_velocity = 2.0 * math.pi
-
-        self.turn_control = 0.0
-        self.thrust_control = 0.0
-
-    def create(self):
-        self.update_phase.add_handler(self)
-
-    def delete(self):
-        self.update_phase.remove_handler(self)
-
-    def update(self, dt):
-        angle = self.physics_component.angle
-        direction = Vector2(math.cos(angle), math.sin(angle))
-
-        self.physics_component.angular_velocity = \
-            self.turn_control * self.max_turn_velocity
-        self.physics_component.acceleration = \
-            self.thrust_control * self.max_thrust_acceleration * direction
 
 class Game(pyglet.window.Window):
     def __init__(self, update_phases=[], draw_phases=[]):
@@ -169,10 +101,9 @@ class ShipEntityCreator(object):
                                              position=position, angle=angle)
         control_component = ShipControlComponent(physics_component,
                                                  self._control_update_phase)
-        input_component = ShipKeyboardInputComponent(self._input_update_phase,
-                                                     control_component,
-                                                     self._key_state_handler,
-                                                     keys)
+        input_component = ShipInputComponent(self._input_update_phase,
+                                             control_component,
+                                             self._key_state_handler, keys)
 
         vertices = generate_circle_vertices(3)
         sprite = PolygonSprite(vertices, color=color)
