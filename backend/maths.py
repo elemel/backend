@@ -119,7 +119,7 @@ class Transform(object):
         self.multiply(cos_angle, -sin_angle, 0.0, sin_angle, cos_angle, 0.0)
 
     def scale(self, scale_x, scale_y):
-        self.multiply(scale_x, scale_x, 0.0, scale_y, scale_y, 0.0)
+        self.multiply(scale_x, 0.0, 0.0, 0.0, scale_y, 0.0)
 
     def transform_vector(self, x, y):
         return self.a * x + self.b * y, self.d * x + self.e * y
