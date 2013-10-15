@@ -135,3 +135,28 @@ class Transform(object):
                     mix(source.d, target.d, alpha),
                     mix(source.e, target.e, alpha),
                     mix(source.f, target.f, alpha))
+
+def cross_2(x1, y1, x2, y2):
+    return x1 * y2 - x2 * y1
+
+class Polygon2(object):
+    def __init__(self, vertices=[]):
+        self.vertices = list(Vector2(x, y) for x, y in vertices)
+
+    @property
+    def edges(self):
+        n = len(self.vertices)
+        for i in xrange(n):
+            j = (i + 1) % n
+            yield self.vertices[i], self.vertices[j]
+
+    def intersects(self, other):
+        pass
+
+    def contains_point(self, x, y):
+        return all(self._edge_contains_point(p1.x, p1.y, p2.x, p2.y, x, y)
+                   for p1, p2 in self.edges)
+
+    def _edge_contains_point(self, edge_x1, edge_y1, edge_x2, edge_y2, x, y):
+        return (cross_2(x - edge_x1, y - edge_y1,
+                        edge_x2 - edge_x1, edge_y2 - edge_y1) < 0.0)

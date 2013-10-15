@@ -12,6 +12,9 @@ from pyglet.gl import *
 import math
 
 def main():
+    pyglet.resource.path.append('../data')
+    pyglet.resource.reindex()
+
     input_update_phase = UpdatePhase()
     control_update_phase = UpdatePhase()
     physics_update_phase = UpdatePhase()
