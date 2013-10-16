@@ -1,5 +1,5 @@
-from backend.component import Component
-from backend.ship_keys import PLAYER_SHIP_KEYS
+from cavear.component import Component
+from cavear.ship_keys import PLAYER_SHIP_KEYS
 
 class ShipInputComponent(Component):
     def __init__(self, update_phase, control_component, key_state_handler,

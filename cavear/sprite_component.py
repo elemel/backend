@@ -1,4 +1,4 @@
-from backend.component import Component
+from cavear.component import Component
 
 class SpriteComponent(Component):
     def __init__(self, sprite):

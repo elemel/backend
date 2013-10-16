@@ -1,5 +1,5 @@
-from backend.component import Component
-from backend.maths import Transform
+from cavear.component import Component
+from cavear.maths import Transform
 
 class AnimationComponent(Component):
     def __init__(self, transform_component, sprite_component, update_phase,

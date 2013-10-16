@@ -1,14 +1,14 @@
-from backend.animation_component import AnimationComponent
-from backend.color import WHITE
-from backend.entity import Entity
-from backend.maths import generate_circle_vertices
-from backend.physics_component import PhysicsComponent
-from backend.ship_control_component import ShipControlComponent
-from backend.ship_input_component import ShipInputComponent
-from backend.ship_keys import PLAYER_SHIP_KEYS
-from backend.sprite import PolygonSprite
-from backend.sprite_component import SpriteComponent
-from backend.transform_component import TransformComponent
+from cavear.animation_component import AnimationComponent
+from cavear.color import WHITE
+from cavear.entity import Entity
+from cavear.maths import generate_circle_vertices
+from cavear.physics_component import PhysicsComponent
+from cavear.ship_control_component import ShipControlComponent
+from cavear.ship_input_component import ShipInputComponent
+from cavear.ship_keys import PLAYER_SHIP_KEYS
+from cavear.sprite import PolygonSprite
+from cavear.sprite_component import SpriteComponent
+from cavear.transform_component import TransformComponent
 
 class ShipEntityCreator(object):
     def __init__(self, input_update_phase, control_update_phase,

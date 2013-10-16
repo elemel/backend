@@ -1,6 +1,6 @@
-from backend.bitmap_text import BitmapFont, BitmapFontConfig, BitmapLabel
-from backend.maths import mix, Transform
-from backend.shader import Shader
+from cavear.bitmap_text import BitmapFont, BitmapFontConfig, BitmapLabel
+from cavear.maths import mix, Transform
+from cavear.shader import Shader
 
 import pyglet
 from pyglet.window import key
@@ -40,7 +40,8 @@ class Game(pyglet.window.Window):
         self.font_config = BitmapFontConfig()
         self.font_config.load(pyglet.resource.file('font.txt'))
         self.font = BitmapFont(self.glyph_texture, self.font_config)
-        self.label = BitmapLabel(self.font, text='BACKEND', batch=self.hud_batch)
+        self.label = BitmapLabel(self.font, text='CAVEAR',
+                                 batch=self.hud_batch)
 
         self.old_label_angle = 0.0
         self.label_angle = 0.0

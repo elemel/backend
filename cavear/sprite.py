@@ -1,6 +1,6 @@
-from backend.color import WHITE
-from backend.maths import Transform
-from backend.utils import flatten
+from cavear.color import WHITE
+from cavear.maths import Transform
+from cavear.utils import flatten
 
 import pyglet
 from pyglet.gl import *

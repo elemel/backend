@@ -1,5 +1,5 @@
-from backend.component import Component
-from backend.maths import Vector2
+from cavear.component import Component
+from cavear.maths import Vector2
 
 class PhysicsComponent(Component):
     def __init__(self, transform_component, update_phase, position=(0.0, 0.0),
