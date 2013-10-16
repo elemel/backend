@@ -27,10 +27,8 @@ class Game(pyglet.window.Window):
         {
             vec4 color = texture2D(tex, gl_TexCoord[0].st);
             vec3 rgb = vec3(1.0);
-            float a0 = 0.45;
-            float as = 10.0;
-            float a = clamp(as * (color.a - a0), 0.0, 1.0);
-            // float a = float(color.a > 0.5);
+            float r = fwidth(color.a);
+            float a = smoothstep(0.5 - r, 0.5 + r, color.a);
             gl_FragColor = vec4(rgb, a);
         }
         """
