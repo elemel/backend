@@ -1,4 +1,4 @@
-from bromine.maths import Transform
+from bromine.maths import Transform2
 from bromine.utils import flatten
 
 import pyglet
@@ -37,11 +37,11 @@ class BitmapFont(object):
 
 class BitmapLabel(object):
     def __init__(self, font, text='', alignment=(0.0, 0.0),
-                 transform=Transform(), group=None, batch=None):
+                 transform=Transform2(), group=None, batch=None):
         self._font = font
         self._text = text
         self._alignment = alignment
-        self._transform = Transform(*transform)
+        self._transform = Transform2(*transform)
         self._vertex_list = None
         self._group = None
         self._batch = None

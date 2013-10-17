@@ -1,9 +1,9 @@
-from bromine.maths import Transform
+from bromine.maths import Transform2
 
 class CollisionBody(object):
-    def __init__(self, polygon, transform=Transform()):
+    def __init__(self, polygon, transform=Transform2()):
         self.polygon = polygon
-        self.transform = Transform(*transform)
+        self.transform = Transform2(*transform)
 
     def touch(self):
         pass

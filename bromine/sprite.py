@@ -1,16 +1,16 @@
 from bromine.color import WHITE
-from bromine.maths import Transform
+from bromine.maths import Transform2
 from bromine.utils import flatten
 
 import pyglet
 from pyglet.gl import *
 
 class PolygonSprite(object):
-    def __init__(self, vertices=[], color=WHITE, transform=Transform(),
+    def __init__(self, vertices=[], color=WHITE, transform=Transform2(),
                  group=None, batch=None):
         self._vertices = list(vertices)
         self._color = color
-        self._transform = Transform(*transform)
+        self._transform = Transform2(*transform)
         self._vertex_list = None
         self._group = None
         self._batch = None
@@ -41,7 +41,7 @@ class PolygonSprite(object):
 
     @transform.setter
     def transform(self, transform):
-        self._transform = transform
+        self._transform.assign(*transform)
         self._update_vertex_list()
 
     @property

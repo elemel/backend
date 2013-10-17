@@ -1,5 +1,5 @@
 from bromine.bitmap_text import BitmapFont, BitmapFontConfig, BitmapLabel
-from bromine.maths import mix, Transform
+from bromine.maths import mix
 from bromine.shader import Shader
 
 import pyglet

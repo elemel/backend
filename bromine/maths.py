@@ -70,7 +70,7 @@ class Vector2(object):
     def __div__(self, other):
         return Vector2(self.x / other, self.y / other)
 
-class Transform(object):
+class Transform2(object):
     def __init__(self, a=1.0, b=0.0, c=0.0, d=0.0, e=1.0, f=0.0):
         self.a = a
         self.b = b

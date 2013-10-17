@@ -1,5 +1,5 @@
 from bromine.component import Component
-from bromine.maths import Transform
+from bromine.maths import Transform2
 
 class AnimationComponent(Component):
     def __init__(self, transform_component, sprite_component, update_phase,
@@ -9,9 +9,9 @@ class AnimationComponent(Component):
         self.sprite_component = sprite_component
         self.update_phase = update_phase
         self.draw_phase = draw_phase
-        self.old_transform = Transform()
-        self.transform = Transform()
-        self.mixed_transform = Transform()
+        self.old_transform = Transform2()
+        self.transform = Transform2()
+        self.mixed_transform = Transform2()
 
     def create(self):
         self.transform.assign(*self.transform_component.transform)
