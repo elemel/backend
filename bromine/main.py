@@ -1,11 +1,11 @@
-from cavear.boulder_entity_creator import BoulderEntityCreator
-from cavear.collision import CollisionDetector
-from cavear.color import CYAN, WHITE, YELLOW
-from cavear.draw_phase import DrawPhase
-from cavear.game import Game
-from cavear.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS
-from cavear.ship_entity_creator import ShipEntityCreator
-from cavear.update_phase import UpdatePhase
+from bromine.boulder_entity_creator import BoulderEntityCreator
+from bromine.collision import CollisionDetector
+from bromine.color import CYAN, WHITE, YELLOW
+from bromine.draw_phase import DrawPhase
+from bromine.game import Game
+from bromine.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS
+from bromine.ship_entity_creator import ShipEntityCreator
+from bromine.update_phase import UpdatePhase
 
 import pyglet
 from pyglet.window import key

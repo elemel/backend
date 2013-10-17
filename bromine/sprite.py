@@ -1,6 +1,6 @@
-from cavear.color import WHITE
-from cavear.maths import Transform
-from cavear.utils import flatten
+from bromine.color import WHITE
+from bromine.maths import Transform
+from bromine.utils import flatten
 
 import pyglet
 from pyglet.gl import *

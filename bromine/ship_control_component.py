@@ -1,5 +1,5 @@
-from cavear.component import Component
-from cavear.maths import Vector2
+from bromine.component import Component
+from bromine.maths import Vector2
 
 import math
 

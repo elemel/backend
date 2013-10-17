@@ -1,5 +1,5 @@
-from cavear.maths import Transform
-from cavear.utils import flatten
+from bromine.maths import Transform
+from bromine.utils import flatten
 
 import pyglet
 from pyglet.gl import *

@@ -1,16 +1,16 @@
-from cavear.animation_component import AnimationComponent
-from cavear.collision import CollisionBody
-from cavear.collision_component import CollisionComponent
-from cavear.color import WHITE
-from cavear.entity import Entity
-from cavear.maths import generate_circle_vertices, Polygon2
-from cavear.physics_component import PhysicsComponent
-from cavear.ship_control_component import ShipControlComponent
-from cavear.ship_input_component import ShipInputComponent
-from cavear.ship_keys import PLAYER_SHIP_KEYS
-from cavear.sprite import PolygonSprite
-from cavear.sprite_component import SpriteComponent
-from cavear.transform_component import TransformComponent
+from bromine.animation_component import AnimationComponent
+from bromine.collision import CollisionBody
+from bromine.collision_component import CollisionComponent
+from bromine.color import WHITE
+from bromine.entity import Entity
+from bromine.maths import generate_circle_vertices, Polygon2
+from bromine.physics_component import PhysicsComponent
+from bromine.ship_control_component import ShipControlComponent
+from bromine.ship_input_component import ShipInputComponent
+from bromine.ship_keys import PLAYER_SHIP_KEYS
+from bromine.sprite import PolygonSprite
+from bromine.sprite_component import SpriteComponent
+from bromine.transform_component import TransformComponent
 
 class ShipEntityCreator(object):
     def __init__(self, input_update_phase, control_update_phase,

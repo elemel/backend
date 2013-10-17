@@ -1,5 +1,5 @@
-from cavear.component import Component
-from cavear.maths import Transform
+from bromine.component import Component
+from bromine.maths import Transform
 
 class AnimationComponent(Component):
     def __init__(self, transform_component, sprite_component, update_phase,

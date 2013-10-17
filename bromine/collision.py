@@ -1,4 +1,4 @@
-from cavear.maths import Transform
+from bromine.maths import Transform
 
 class CollisionBody(object):
     def __init__(self, polygon, transform=Transform()):

@@ -1,4 +1,4 @@
-from cavear.component import Component
+from bromine.component import Component
 
 class SpriteComponent(Component):
     def __init__(self, sprite):
