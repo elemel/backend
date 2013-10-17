@@ -1,7 +1,7 @@
 from bromine.animation_component import AnimationComponent
 from bromine.collision import CollisionBody
 from bromine.collision_component import CollisionComponent
-from bromine.color import WHITE
+from bromine.colors import WHITE
 from bromine.entity import Entity
 from bromine.maths import generate_circle_vertices, Polygon2
 from bromine.physics_component import PhysicsComponent

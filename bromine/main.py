@@ -1,6 +1,6 @@
 from bromine.boulder_entity_creator import BoulderEntityCreator
 from bromine.collision import CollisionDetector
-from bromine.color import CYAN, WHITE, YELLOW
+from bromine.colors import CYAN, WHITE, YELLOW
 from bromine.draw_phase import DrawPhase
 from bromine.game import Game
 from bromine.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS

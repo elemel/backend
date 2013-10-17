@@ -1,4 +1,4 @@
-from bromine.color import WHITE
+from bromine.colors import WHITE
 from bromine.maths import Transform2
 from bromine.utils import flatten
 
