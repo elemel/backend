@@ -1,4 +1,5 @@
 from cavear.boulder_entity_creator import BoulderEntityCreator
+from cavear.collision import CollisionDetector
 from cavear.color import CYAN, WHITE, YELLOW
 from cavear.draw_phase import DrawPhase
 from cavear.game import Game
@@ -15,23 +16,30 @@ def main():
     pyglet.resource.path.append('../data')
     pyglet.resource.reindex()
 
+    collision_detector = CollisionDetector()
+
     input_update_phase = UpdatePhase()
     control_update_phase = UpdatePhase()
     physics_update_phase = UpdatePhase()
+    collision_update_phase = UpdatePhase()
     animation_update_phase = UpdatePhase()
 
     draw_phase = DrawPhase()
 
     update_phases = [input_update_phase, control_update_phase,
-                     physics_update_phase, animation_update_phase]
+                     physics_update_phase, collision_update_phase,
+                     animation_update_phase]
     draw_phases = [draw_phase]
     game = Game(update_phases, draw_phases)
 
     ship_entity_creator = ShipEntityCreator(input_update_phase,
                                             control_update_phase,
                                             physics_update_phase,
+                                            collision_update_phase,
                                             animation_update_phase,
-                                            draw_phase, game.key_state_handler)
+                                            draw_phase, game.key_state_handler,
+                                            collision_detector)
+
     boulder_entity_creator = BoulderEntityCreator()
 
     ship_entity_1 = ship_entity_creator.create(position=(-2.0, 0.0),

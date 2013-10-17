@@ -21,7 +21,7 @@ class CollisionListener(object):
         pass
 
 class CollisionDetector(object):
-    def __init__(self, update_phase):
+    def __init__(self):
         self._bodies = []
         self._collisions = []
         self.listener = None
@@ -37,4 +37,4 @@ class CollisionDetector(object):
     def update(self, dt):
         for i in xrange(len(self._bodies) - 1):
             for j in xrange(i + 1, len(self._bodies)):
-                
+                pass                
