@@ -14,13 +14,14 @@ from bromine.transform_component import TransformComponent
 
 class ShipEntityCreator(object):
     def __init__(self, input_update_phase, control_update_phase,
-                 physics_update_phase, collision_update_phase,
+                 physics_update_phase, collision_transform_update_phase,
                  animation_update_phase, draw_phase, key_state_handler,
                  collision_detector):
         self._input_update_phase = input_update_phase
         self._control_update_phase = control_update_phase
         self._physics_update_phase = physics_update_phase
-        self._collision_update_phase = collision_update_phase
+        self._collision_transform_update_phase = \
+            collision_transform_update_phase
         self._animation_update_phase = animation_update_phase
 
         self._draw_phase = draw_phase
@@ -39,7 +40,7 @@ class ShipEntityCreator(object):
 
         collision_body = CollisionBody(polygon)
         collision_component = CollisionComponent(transform_component,
-                                                 self._collision_update_phase,
+                                                 self._collision_transform_update_phase,
                                                  collision_body,
                                                  self._collision_detector)
 
@@ -61,4 +62,6 @@ class ShipEntityCreator(object):
         components = [transform_component, physics_component,
                       collision_component, control_component, input_component,
                       sprite_component, animation_component]
-        return Entity(components)
+        entity = Entity(components)
+        collision_body.user_data = 'ship', entity
+        return entity

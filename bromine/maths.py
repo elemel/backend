@@ -29,7 +29,7 @@ class Vector2(object):
         self.x, self.y = values
 
     def __neg__(self):
-        return -self.x, -self.y
+        return Vector2(-self.x, -self.y)
 
     def __iadd__(self, other):
         x, y = other
@@ -69,6 +69,13 @@ class Vector2(object):
 
     def __div__(self, other):
         return Vector2(self.x / other, self.y / other)
+
+    def __str__(self):
+        return str([self.x, self.y])
+
+    def assign(self, x, y):
+        self.x = x
+        self.y = y
 
 class Transform2(object):
     def __init__(self, a=1.0, b=0.0, c=0.0, d=0.0, e=1.0, f=0.0):
@@ -139,24 +146,82 @@ class Transform2(object):
 def cross_2(x1, y1, x2, y2):
     return x1 * y2 - x2 * y1
 
+class Box2(object):
+    def __init__(self, p1=(-1.0, -1.0), p2=(1.0, 1.0)):
+        self.p1 = Vector2(*p1)
+        self.p2 = Vector2(*p2)
+
+    def reset(self):
+        self.p1.assign(-1.0, -1.0)
+        self.p2.assign(1.0, 1.0)
+
+    def clear(self):
+        self.p1.assign(float('inf'), float('inf'))
+        self.p2.assign(float('-inf'), float('inf'))
+
+    def add_point(self, x, y):
+        self.p1.x = min(self.p1.x, x)
+        self.p1.y = min(self.p1.y, y)
+        self.p2.x = max(self.p2.x, x)
+        self.p2.y = max(self.p2.y, y)
+
+    def intersects(self, shape):
+        return shape.intersects_box(self)
+
+    def intersects_box(self, box):
+        return (self.p1.x < box.p2.x and box.p1.x < self.p2.x and
+                self.p1.y < box.p2.y and box.p1.y < self.p2.y)
+
+    def contains_point(self, x, y):
+        return self.p1.x < x < self.p2.x and self.p1.y < y < self.p2.y
+
+    def __str__(self):
+        return '[%s, %s]', (self.p1, self.p2)
+
 class Polygon2(object):
     def __init__(self, vertices=[]):
         self.vertices = list(Vector2(x, y) for x, y in vertices)
 
+    def __len__(self):
+        return len(self.vertices)
+
+    def __iter__(self):
+        return iter(self.vertices)
+
+    def __getitem__(self, index):
+        return self.vertices[index]
+
+    def __setitem__(self, index, vertex):
+        self.vertices[index].assign(*vertex)
+
     @property
     def edges(self):
-        n = len(self.vertices)
-        for i in xrange(n):
-            j = (i + 1) % n
-            yield self.vertices[i], self.vertices[j]
+        for i in xrange(len(self.vertices) - 1):
+            yield self.vertices[i], self.vertices[i + 1]
+        yield self.vertices[-1], self.vertices[0]
 
     def intersects(self, other):
-        pass
+        return other.intersects_polygon(self)
+
+    def intersects_polygon(self, other):
+        return (not self._separates_polygon(other) and
+                not other._separates_polygon(self))
+
+    def _separates_polygon(self, polygon):
+        return any(self._edge_separates_polygon(x1, y1, x2, y2, polygon)
+                   for (x1, y1), (x2, y2) in self.edges)
+
+    def _edge_separates_polygon(self, edge_x1, edge_y1, edge_x2, edge_y2,
+                                polygon):
+        return not any(self._edge_contains_point(edge_x1, edge_y1,
+                                                 edge_x2, edge_y2, x, y)
+                       for x, y in polygon)
 
     def contains_point(self, x, y):
         return all(self._edge_contains_point(p1.x, p1.y, p2.x, p2.y, x, y)
                    for p1, p2 in self.edges)
 
-    def _edge_contains_point(self, edge_x1, edge_y1, edge_x2, edge_y2, x, y):
-        return (cross_2(x - edge_x1, y - edge_y1,
+    def _edge_contains_point(self, edge_x1, edge_y1, edge_x2, edge_y2,
+                             point_x, point_y):
+        return (cross_2(point_x - edge_x1, point_y - edge_y1,
                         edge_x2 - edge_x1, edge_y2 - edge_y1) < 0.0)

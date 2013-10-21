@@ -14,6 +14,7 @@ class Game(pyglet.window.Window):
         self.world_dt = 1.0 / 10.0
         self.world_time = 0.0
         self.camera_scale = 0.1
+        self._next_key = 0
         self.batch = pyglet.graphics.Batch()
         self.update_phases = list(update_phases)
         self.draw_phases = list(draw_phases)
@@ -49,10 +50,13 @@ class Game(pyglet.window.Window):
     def add_entity(self, entity):
         self.entities.append(entity)
         entity.game = self
+        entity.key = self._next_key
+        self._next_key += 1
         entity.create()
 
     def remove_entity(self, entity):
         entity.delete()
+        entity.key = -1
         entity.game = None
         self.entities.remove(entity)
 
