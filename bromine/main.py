@@ -59,9 +59,7 @@ def main():
                                             collision_transform_update_phase,
                                             animation_update_phase,
                                             draw_phase, game.key_state_handler,
-                                            collision_detector)
-
-    boulder_entity_creator = BoulderEntityCreator()
+                                            collision_detector, game.batch)
 
     ship_entity_1 = ship_entity_creator.create(position=(-2.0, 0.0),
                                                angle=(0.5 * math.pi),
@@ -74,9 +72,6 @@ def main():
                                                color=CYAN,
                                                keys=PLAYER_2_SHIP_KEYS)
     game.add_entity(ship_entity_2)
-
-    boulder_entity = boulder_entity_creator.create(position=(0.0, 2.0))
-    game.add_entity(boulder_entity)
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()
