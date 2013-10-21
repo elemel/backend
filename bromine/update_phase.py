@@ -5,7 +5,7 @@ class UpdatePhase(object):
     def add_handler(self, handler):
         self._handlers.append(handler)
 
-    def remove_handler(handler):
+    def remove_handler(self, handler):
         self._handlers.remove(handler)
 
     def update(self, dt):
