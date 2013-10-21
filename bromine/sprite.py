@@ -51,10 +51,9 @@ class PolygonSprite(object):
     @group.setter
     def group(self, group):
         if group is not self._group:
+            self._delete_vertex_list()
             self._group = group
-            if self._batch is not None:
-                self._batch.migrate(self._vertex_list, GL_TRIANGLES,
-                                    self._group, self._batch)
+            self._create_vertex_list()
 
     @property
     def batch(self):
@@ -63,26 +62,28 @@ class PolygonSprite(object):
     @batch.setter
     def batch(self, batch):
         if batch is not self._batch:
-            if self._batch is not None:
-                if batch is not None:
-                    self._batch.migrate(self._vertex_list, GL_TRIANGLES,
-                                        self._group, batch)
-                else:
-                    self._vertex_list.delete()
-                    self._vertex_list = None
-            else:
-                vertex_count = len(self.vertices)
-                indices = tuple(flatten((0, i, i + 1)
-                                        for i in xrange(vertex_count - 1)))
-                vertex_data = tuple(flatten(self.transform.transform_point(*v)
-                                            for v in self.vertices))
-                color_data = len(self.vertices) * self.color
-                self._vertex_list = batch.add_indexed(vertex_count,
-                                                      GL_TRIANGLES,
-                                                      self._group, indices,
-                                                      ('v2f', vertex_data),
-                                                      ('c4B', color_data))
+            self._delete_vertex_list()
             self._batch = batch
+            self._create_vertex_list()
+
+    def _create_vertex_list(self):
+        if self._vertex_list is None and self._batch is not None:
+            vertex_count = len(self.vertices)
+            indices = tuple(flatten((0, i, i + 1)
+                                    for i in xrange(1, vertex_count - 1)))
+            vertex_data = tuple(flatten(self.transform.transform_point(*v)
+                                        for v in self.vertices))
+            color_data = len(self.vertices) * self.color
+            self._vertex_list = self._batch.add_indexed(vertex_count,
+                                                        GL_TRIANGLES,
+                                                        self._group, indices,
+                                                        ('v2f', vertex_data),
+                                                        ('c4B', color_data))
+
+    def _delete_vertex_list(self):
+        if self._vertex_list is not None:
+            self._vertex_list.delete()
+            self._vertex_list = None
 
     def _update_vertex_list(self):
         if self._vertex_list is not None:
