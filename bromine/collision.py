@@ -1,9 +1,11 @@
 from bromine.maths import Box2, Polygon2, Transform2
 
 class CollisionBody(object):
-    def __init__(self, polygon, transform=Transform2(), user_data=None):
+    def __init__(self, polygon, transform=Transform2(), seed=False,
+                 user_data=None):
         self._polygon = Polygon2(polygon)
         self._transform = Transform2(*transform)
+        self._seed = seed
         self.user_data = user_data
         self._detector = None
         self._key = -1
@@ -19,6 +21,10 @@ class CollisionBody(object):
     @property
     def transform(self):
         return self._transform
+
+    @property
+    def seed(self):
+        return self._seed
 
     @property
     def dirty(self):
@@ -81,14 +87,19 @@ class CollisionDetector(object):
         self._bodies.remove(body)
 
     def update(self, dt):
-        for body in self._bodies:
+        for body in self._dirty_bodies:
             body._update_world_geometry()
+            body._dirty = False
+        del self._dirty_bodies[:]
 
         for i, body_i in enumerate(self._bodies):
+            if not body_i.seed:
+                continue
+
             for j, body_j in enumerate(self._bodies):
                 bounds_i = body_i._world_bounds
                 bounds_j = body_j._world_bounds
-                if i < j and bounds_i.intersects(bounds_j):
+                if (not body_j.seed or i < j) and bounds_i.intersects(bounds_j):
                     polygon_i = body_i._world_polygon
                     polygon_j = body_j._world_polygon
                     if polygon_i.intersects(polygon_j):
