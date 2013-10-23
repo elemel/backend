@@ -1,5 +1,5 @@
-from bromine.component import Component
-from bromine.maths import Vector2
+from drillion.component import Component
+from drillion.maths import Vector2
 
 class PhysicsComponent(Component):
     def __init__(self, transform_component, update_phase, position=(0.0, 0.0),

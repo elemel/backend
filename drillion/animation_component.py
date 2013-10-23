@@ -1,5 +1,5 @@
-from bromine.component import Component
-from bromine.maths import Transform2
+from drillion.component import Component
+from drillion.maths import Transform2
 
 class AnimationComponent(Component):
     def __init__(self, transform_component, sprite_component, update_phase,

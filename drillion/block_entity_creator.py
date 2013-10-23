@@ -1,11 +1,11 @@
-from bromine.collision import CollisionBody
-from bromine.collision_component import CollisionComponent
-from bromine.color_generator import ColorGenerator, ClampedGaussGenerator
-from bromine.entity import Entity
-from bromine.maths import cf2ub, generate_circle_vertices, Polygon2, Transform2
-from bromine.sprite import PolygonSprite
-from bromine.sprite_component import SpriteComponent
-from bromine.transform_component import TransformComponent
+from drillion.collision import CollisionBody
+from drillion.collision_component import CollisionComponent
+from drillion.color_generator import ColorGenerator, ClampedGaussGenerator
+from drillion.entity import Entity
+from drillion.maths import cf2ub, generate_circle_vertices, Polygon2, Transform2
+from drillion.sprite import PolygonSprite
+from drillion.sprite_component import SpriteComponent
+from drillion.transform_component import TransformComponent
 
 import random
 

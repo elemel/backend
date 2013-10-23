@@ -1,12 +1,12 @@
-from bromine.block_entity_creator import BlockEntityCreator
-from bromine.collision import CollisionDetector, CollisionListener
-from bromine.colors import CYAN, WHITE, YELLOW
-from bromine.draw_phase import DrawPhase
-from bromine.game import Game
-from bromine.pnoise import pnoise
-from bromine.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS
-from bromine.ship_entity_creator import ShipEntityCreator
-from bromine.update_phase import UpdatePhase
+from drillion.block_entity_creator import BlockEntityCreator
+from drillion.collision import CollisionDetector, CollisionListener
+from drillion.colors import CYAN, WHITE, YELLOW
+from drillion.draw_phase import DrawPhase
+from drillion.game import Game
+from drillion.pnoise import pnoise
+from drillion.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS
+from drillion.ship_entity_creator import ShipEntityCreator
+from drillion.update_phase import UpdatePhase
 
 import pyglet
 from pyglet.window import key

@@ -1,16 +1,16 @@
-from bromine.animation_component import AnimationComponent
-from bromine.collision import CollisionBody
-from bromine.collision_component import CollisionComponent
-from bromine.colors import WHITE
-from bromine.entity import Entity
-from bromine.maths import generate_circle_vertices, Polygon2
-from bromine.physics_component import PhysicsComponent
-from bromine.ship_control_component import ShipControlComponent
-from bromine.ship_input_component import ShipInputComponent
-from bromine.ship_keys import PLAYER_SHIP_KEYS
-from bromine.sprite import PolygonSprite
-from bromine.sprite_component import SpriteComponent
-from bromine.transform_component import TransformComponent
+from drillion.animation_component import AnimationComponent
+from drillion.collision import CollisionBody
+from drillion.collision_component import CollisionComponent
+from drillion.colors import WHITE
+from drillion.entity import Entity
+from drillion.maths import generate_circle_vertices, Polygon2
+from drillion.physics_component import PhysicsComponent
+from drillion.ship_control_component import ShipControlComponent
+from drillion.ship_input_component import ShipInputComponent
+from drillion.ship_keys import PLAYER_SHIP_KEYS
+from drillion.sprite import PolygonSprite
+from drillion.sprite_component import SpriteComponent
+from drillion.transform_component import TransformComponent
 
 class ShipEntityCreator(object):
     def __init__(self, input_update_phase, control_update_phase,

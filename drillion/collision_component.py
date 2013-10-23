@@ -1,4 +1,4 @@
-from bromine.component import Component
+from drillion.component import Component
 
 class CollisionComponent(Component):
     def __init__(self, transform_component, update_phase, body, detector):

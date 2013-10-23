@@ -1,5 +1,5 @@
-from bromine.component import Component
-from bromine.maths import Vector2
+from drillion.component import Component
+from drillion.maths import Vector2
 
 import math
 

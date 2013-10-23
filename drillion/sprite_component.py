@@ -1,4 +1,4 @@
-from bromine.component import Component
+from drillion.component import Component
 
 class SpriteComponent(Component):
     def __init__(self, sprite, batch):

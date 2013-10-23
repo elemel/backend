@@ -1,5 +1,5 @@
-from bromine.maths import Transform2
-from bromine.utils import flatten
+from drillion.maths import Transform2
+from drillion.utils import flatten
 
 import pyglet
 from pyglet.gl import *

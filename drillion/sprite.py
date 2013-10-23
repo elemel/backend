@@ -1,6 +1,6 @@
-from bromine.colors import WHITE
-from bromine.maths import Transform2
-from bromine.utils import flatten
+from drillion.colors import WHITE
+from drillion.maths import Transform2
+from drillion.utils import flatten
 
 import pyglet
 from pyglet.gl import *

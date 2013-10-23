@@ -1,6 +1,6 @@
-from bromine.bitmap_text import BitmapFont, BitmapFontConfig, BitmapLabel
-from bromine.maths import mix
-from bromine.shader import Shader
+from drillion.bitmap_text import BitmapFont, BitmapFontConfig, BitmapLabel
+from drillion.maths import mix
+from drillion.shader import Shader
 
 import pyglet
 from pyglet.window import key
@@ -41,7 +41,7 @@ class Game(pyglet.window.Window):
         self.font_config = BitmapFontConfig()
         self.font_config.load(pyglet.resource.file('font.txt'))
         self.font = BitmapFont(self.glyph_texture, self.font_config)
-        self.label = BitmapLabel(self.font, text='BROMINE',
+        self.label = BitmapLabel(self.font, text='DRILLION',
                                  batch=self.hud_batch)
 
         self.old_label_angle = 0.0

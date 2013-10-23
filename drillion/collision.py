@@ -1,4 +1,4 @@
-from bromine.maths import Box2, Polygon2, Transform2
+from drillion.maths import Box2, Polygon2, Transform2
 
 class CollisionBody(object):
     def __init__(self, polygon, transform=Transform2(), seed=False,

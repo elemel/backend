@@ -1,5 +1,5 @@
-from bromine.component import Component
-from bromine.ship_keys import PLAYER_SHIP_KEYS
+from drillion.component import Component
+from drillion.ship_keys import PLAYER_SHIP_KEYS
 
 class ShipInputComponent(Component):
     def __init__(self, update_phase, control_component, key_state_handler,
