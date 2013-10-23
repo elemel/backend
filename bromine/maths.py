@@ -1,7 +1,13 @@
 import math
 
-def mix(source, target, alpha):
-    return (1.0 - alpha) * source + alpha * target
+def clamp(x, x1, x2):
+    return min(max(x, x1), x2)
+
+def cf2ub(cf):
+    return clamp(int(cf * 256.0), 0, 255)
+
+def mix(x1, x2, t):
+    return x1 + t * (x2 - x1)
 
 def generate_circle_vertices(count, x=0.0, y=0.0, radius=1.0, angle=0.0):
     for i in xrange(count):
