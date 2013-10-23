@@ -1,8 +1,9 @@
-from bromine.boulder_entity_creator import BoulderEntityCreator
+from bromine.block_entity_creator import BlockEntityCreator
 from bromine.collision import CollisionDetector, CollisionListener
 from bromine.colors import CYAN, WHITE, YELLOW
 from bromine.draw_phase import DrawPhase
 from bromine.game import Game
+from bromine.pnoise import pnoise
 from bromine.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS
 from bromine.ship_entity_creator import ShipEntityCreator
 from bromine.update_phase import UpdatePhase
@@ -11,6 +12,7 @@ import pyglet
 from pyglet.window import key
 from pyglet.gl import *
 import math
+import random
 
 class GameCollisionListener(CollisionListener):
     def __init__(self, game=None):
@@ -22,8 +24,8 @@ class GameCollisionListener(CollisionListener):
 
     def update(self, dt):
         for collision in self.collisions:
-            for category, entity in [collision.body_b.user_data]:
-                                     # collision.body_b.user_data]:
+            for category, entity in [collision.body_a.user_data,
+                                     collision.body_b.user_data]:
                 if entity.key != -1:
                     self.game.remove_entity(entity)
         del self.collisions[:]
@@ -60,6 +62,26 @@ def main():
                                             animation_update_phase,
                                             draw_phase, game.key_state_handler,
                                             collision_detector, game.batch)
+
+    block_entity_creator = BlockEntityCreator(collision_detector, game.batch)
+
+    seed_x = random.random()
+    seed_y = random.random()
+    seed_z = random.random()
+
+    noise_scale = 0.2
+
+    for grid_x in xrange(-10, 10):
+        for grid_y in xrange(-10, 10):
+            if -2 <= grid_x < 2 and -1 <= grid_y < 1:
+                continue
+            noise_x = seed_x + noise_scale * float(grid_x)
+            noise_y = seed_y + noise_scale * float(grid_y)
+            noise_z = seed_z
+            density = pnoise(noise_x, noise_y, noise_z)
+            if density > 0.0:
+                block_entity = block_entity_creator.create(grid_position=(grid_x, grid_y))
+                game.add_entity(block_entity)
 
     ship_entity_1 = ship_entity_creator.create(position=(-2.0, 0.0),
                                                angle=(0.5 * math.pi),
