@@ -37,11 +37,13 @@ class BitmapFont(object):
 
 class BitmapLabel(object):
     def __init__(self, font, text='', alignment=(0.0, 0.0),
-                 transform=Transform2(), group=None, batch=None):
+                 transform=Transform2(), color=(255, 255, 255, 255),
+                 group=None, batch=None):
         self._font = font
         self._text = text
         self._alignment = alignment
         self._transform = Transform2(*transform)
+        self._color = tuple(color)
         self._vertex_list = None
         self._group = None
         self._batch = None
@@ -76,6 +78,15 @@ class BitmapLabel(object):
         self._update_vertex_list()
 
     @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, color):
+        self._color = tuple(color)
+        self._update_vertex_list()
+
+    @property
     def group(self):
         return self._group
 
@@ -105,16 +116,25 @@ class BitmapLabel(object):
                 vertex_count = 4 * len(self._text)
                 vertex_data = tuple(self._generate_vertex_data())
                 tex_coord_data = tuple(self._generate_tex_coord_data())
+                color_data = vertex_count * self._color
                 self._vertex_list = batch.add(vertex_count, GL_QUADS,
                                               self._group,
                                               ('v2f', vertex_data),
-                                              ('t2f', tex_coord_data))
+                                              ('t2f', tex_coord_data),
+                                              ('c4B', color_data))
             self._batch = batch
 
     def _update_vertex_list(self):
         if self._vertex_list is not None:
-            self._vertex_list.vertices = tuple(self._generate_vertex_data())
-            self._vertex_list.tex_coords = tuple(self._generate_tex_coord_data())
+            r, g, b, a = self._color
+            if a > 0:
+                self._vertex_list.vertices = tuple(self._generate_vertex_data())
+                self._vertex_list.tex_coords = tuple(self._generate_tex_coord_data())
+                self._vertex_list.colors = 4 * len(self._text) * self._color
+            else:
+                self._vertex_list.vertices = 4 * len(self._text) * (0.0, 0.0)
+                self._vertex_list.tex_coords = 4 * len(self._text) * (0.0, 0.0)
+                self._vertex_list.colors = 4 * len(self._text) * (0, 0, 0, 0)
 
     def _generate_vertex_data(self):
         return flatten(self._generate_vertices())

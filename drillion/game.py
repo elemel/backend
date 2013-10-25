@@ -1,7 +1,8 @@
 from drillion.bitmap_text import BitmapFont, BitmapFontConfig, BitmapLabel
-from drillion.maths import mix
+from drillion.maths import cf2ub, clamp, mix
 from drillion.shader import Shader
 
+from math import cos, pi, sin
 import pyglet
 from pyglet.window import key
 from pyglet.gl import *
@@ -27,9 +28,9 @@ class Game(pyglet.window.Window):
         void main(void)
         {
             vec4 color = texture2D(tex, gl_TexCoord[0].st);
-            vec3 rgb = vec3(1.0);
+            vec3 rgb = gl_Color.rgb;
             float r = fwidth(color.a);
-            float a = smoothstep(0.5 - r, 0.5 + r, color.a);
+            float a = gl_Color.a * smoothstep(0.5 - r, 0.5 + r, color.a);
             gl_FragColor = vec4(rgb, a);
         }
         """
@@ -44,8 +45,8 @@ class Game(pyglet.window.Window):
         self.label = BitmapLabel(self.font, text='DRILLION',
                                  batch=self.hud_batch)
 
-        self.old_label_angle = 0.0
-        self.label_angle = 0.0
+        self.old_label_time = 0.0
+        self.label_time = 0.0
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -76,8 +77,8 @@ class Game(pyglet.window.Window):
                 phase.update(self.world_dt)
             self.world_time += self.world_dt
 
-            self.old_label_angle = self.label_angle
-            self.label_angle += -0.01 * self.world_dt
+            self.old_label_time = self.label_time
+            self.label_time += self.world_dt
 
     def on_draw(self):
         alpha = (self.time - self.world_time) / self.world_dt
@@ -105,14 +106,20 @@ class Game(pyglet.window.Window):
         glOrtho(0.0, float(self.width), 0.0, float(self.height), -1.0, 1.0)
         glMatrixMode(GL_MODELVIEW)
 
-        label_angle = mix(self.old_label_angle, self.label_angle, alpha)
+        label_time = mix(self.old_label_time, self.label_time, alpha)
+        label_angle = 0.0
+        label_scale = 7.0
+
+        label_alpha_angle = clamp(2.0 * pi * (label_time - 5.0) / 5.0, 0.0, 2.0 * pi)
+        label_alpha = 0.5 * (1.0 + sin(label_alpha_angle - 0.5 * pi))
 
         label_transform = self.label.transform
         label_transform.reset()
-        label_transform.scale(4.0, 4.0)
+        label_transform.scale(label_scale, label_scale)
         label_transform.rotate(label_angle)
         label_transform.translate(0.5 * float(self.width), 0.5 * self.height)
         self.label.transform = label_transform
+        self.label.color = 127, 255, 0, cf2ub(label_alpha)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
