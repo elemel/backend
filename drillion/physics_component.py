@@ -1,5 +1,5 @@
 from drillion.component import Component
-from drillion.maths import Vector2
+from drillion.maths import Transform2, Vector2
 
 class PhysicsComponent(Component):
     def __init__(self, transform_component, update_phase, position=(0.0, 0.0),
@@ -31,7 +31,7 @@ class PhysicsComponent(Component):
         self.angle += dt * self.angular_velocity
         self.angular_velocity += dt * self.angular_acceleration
 
-        transform = self.transform_component.transform
+        transform = Transform2(*self.transform_component.transform)
         transform.reset()
         transform.rotate(self.angle)
         transform.translate(*self.position)
