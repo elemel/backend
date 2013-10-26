@@ -23,6 +23,10 @@ class TransformComponent(Component):
     def transform(self):
         return self._transform
 
+    @transform.setter
+    def transform(self, transform):
+        self._transform.assign(*transform)
+
     @property
     def world_transform(self):
         transform = Transform2(*self._transform)
