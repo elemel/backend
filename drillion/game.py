@@ -14,7 +14,7 @@ class Game(pyglet.window.Window):
         self.time = 0.0
         self.world_dt = 1.0 / 10.0
         self.world_time = 0.0
-        self.camera_scale = 0.1
+        self.camera_scale = 0.05
         self._next_key = 0
         self.batch = pyglet.graphics.Batch()
         self.update_phases = list(update_phases)
@@ -56,6 +56,8 @@ class Game(pyglet.window.Window):
         entity.create()
 
     def remove_entity(self, entity):
+        for child in reversed(list(entity.children)):
+            self.remove_entity(child)
         entity.delete()
         entity.key = -1
         entity.game = None
@@ -119,7 +121,7 @@ class Game(pyglet.window.Window):
         label_transform.rotate(label_angle)
         label_transform.translate(0.5 * float(self.width), 0.5 * self.height)
         self.label.transform = label_transform
-        self.label.color = 127, 255, 0, cf2ub(label_alpha)
+        self.label.color = 255, 255, 255, cf2ub(label_alpha)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
