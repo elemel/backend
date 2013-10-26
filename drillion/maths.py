@@ -107,19 +107,19 @@ class Transform2(object):
         self.assign(1.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 
     def multiply(self, a, b, c, d, e, f):
-        self.assign(self.a * a + self.b * d + self.c,
-                    self.a * b + self.b * e + self.c,
+        self.assign(self.a * a + self.b * d,
+                    self.a * b + self.b * e,
                     self.a * c + self.b * f + self.c,
-                    self.d * a + self.e * d + self.f,
-                    self.d * b + self.e * e + self.f,
+                    self.d * a + self.e * d,
+                    self.d * b + self.e * e,
                     self.d * c + self.e * f + self.f)
 
     def right_multiply(self, a, b, c, d, e, f):
-        self.assign(a * self.a + b * self.d + c,
-                    a * self.b + b * self.e + c,
+        self.assign(a * self.a + b * self.d,
+                    a * self.b + b * self.e,
                     a * self.c + b * self.f + c,
-                    d * self.a + e * self.d + f,
-                    d * self.b + e * self.e + f,
+                    d * self.a + e * self.d,
+                    d * self.b + e * self.e,
                     d * self.c + e * self.f + f)
 
     def translate(self, x, y):
