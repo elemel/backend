@@ -18,5 +18,5 @@ class CollisionComponent(Component):
             self.update_phase.remove_handler(self)
 
     def update(self, dt):
-        self.body.transform.assign(*self.transform_component.transform)
+        self.body.transform.assign(*self.transform_component.world_transform)
         self.body.touch()

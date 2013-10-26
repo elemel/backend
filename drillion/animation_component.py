@@ -14,7 +14,7 @@ class AnimationComponent(Component):
         self.mixed_transform = Transform2()
 
     def create(self):
-        self.transform.assign(*self.transform_component.transform)
+        self.transform.assign(*self.transform_component.world_transform)
         self.old_transform.assign(*self.transform)
         self.update_phase.add_handler(self)
         self.draw_phase.add_handler(self)
@@ -25,7 +25,7 @@ class AnimationComponent(Component):
 
     def update(self, dt):
         self.old_transform.assign(*self.transform)
-        self.transform.assign(*self.transform_component.transform)
+        self.transform.assign(*self.transform_component.world_transform)
 
     def draw(self, alpha):
         self.mixed_transform.mix(self.old_transform, self.transform, alpha)
