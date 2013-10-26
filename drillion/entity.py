@@ -13,3 +13,9 @@ class Entity(object):
         for component in reversed(self.components):
             component.delete()
             component.entity = None
+
+    def find_component(self, cls):
+        for component in self.components:
+            if isinstance(component, cls):
+                return component
+        return None
