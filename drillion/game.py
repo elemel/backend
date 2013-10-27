@@ -11,6 +11,7 @@ class Game(pyglet.window.Window):
     def __init__(self, update_phases=[], draw_phases=[]):
         config = pyglet.gl.Config(double_buffer=1, sample_buffers=1,samples=16)
         super(Game, self).__init__(fullscreen=True, config=config)
+        self.max_dt = 1.0
         self.time = 0.0
         self.world_dt = 1.0 / 10.0
         self.world_time = 0.0
@@ -73,6 +74,7 @@ class Game(pyglet.window.Window):
         self.key_state_handler.on_key_release(symbol, modifiers)
 
     def update(self, dt):
+        dt = min(dt, self.max_dt)
         self.time += dt
         while self.time > self.world_time + self.world_dt:
             for phase in self.update_phases:
