@@ -49,6 +49,9 @@ class Game(pyglet.window.Window):
         self.old_label_time = 0.0
         self.label_time = 0.0
 
+        self.update_count = 0
+        self.draw_count = 0
+
     def add_entity(self, entity):
         self.entities.append(entity)
         entity.game = self
@@ -84,11 +87,15 @@ class Game(pyglet.window.Window):
             self.old_label_time = self.label_time
             self.label_time += self.world_dt
 
+            self.update_count += 1
+
     def on_draw(self):
         alpha = (self.time - self.world_time) / self.world_dt
         self.clear()
         self.draw_world(alpha)
         self.draw_hud(alpha)
+
+        self.draw_count += 1
 
     def draw_world(self, alpha):
         aspect_ratio = float(self.width) / float(self.height)

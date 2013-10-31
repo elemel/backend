@@ -44,19 +44,19 @@ def main():
     pyglet.resource.path.append('../data')
     pyglet.resource.reindex()
 
-    input_update_phase = UpdatePhase()
-    control_update_phase = UpdatePhase()
-    physics_update_phase = UpdatePhase()
-    collision_transform_update_phase = UpdatePhase()
-    collision_update_phase = UpdatePhase()
-    animation_update_phase = UpdatePhase()
+    input_update_phase = UpdatePhase('input')
+    control_update_phase = UpdatePhase('control')
+    physics_update_phase = UpdatePhase('physics')
+    collision_transform_update_phase = UpdatePhase('collision_transform')
+    collision_update_phase = UpdatePhase('collision')
+    animation_update_phase = UpdatePhase('animation')
 
     collision_listener = GameCollisionListener()
     collision_detector = CollisionDetector(listener=collision_listener)
     collision_update_phase.add_handler(collision_detector)
     collision_update_phase.add_handler(collision_listener)
 
-    draw_phase = DrawPhase()
+    draw_phase = DrawPhase('draw')
 
     update_phases = [input_update_phase, control_update_phase,
                      physics_update_phase, collision_transform_update_phase,
@@ -156,6 +156,21 @@ def main():
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()
+
+    update_phase_times = [(phase.total_time, phase.name)
+                          for phase in update_phases]
+    total_update_time = sum(time for time, name in update_phase_times)
+    average_update_time = total_update_time / float(game.update_count)
+    print 'Average update time: %f' % average_update_time
+    for time, name in reversed(sorted(update_phase_times)):
+        time_percentage = int(round(100.0 * time / total_update_time))
+        print '%3d%%  %s' % (time_percentage, name)
+
+    draw_phase_times = [(phase.total_time, phase.name)
+                        for phase in draw_phases]
+    total_draw_time = sum(time for time, name in draw_phase_times)
+    average_draw_time = total_draw_time / float(game.draw_count)
+    print 'Average draw time: %f' % average_draw_time
 
 if __name__ == '__main__':
     main()
