@@ -31,7 +31,7 @@ class BulletEntityCreator(object):
 
         collision_vertices = [(0.0, 0.0)]
         collision_polygon = Polygon2(collision_vertices)
-        collision_body = CollisionBody(collision_polygon, seed=True)
+        collision_body = CollisionBody(collision_polygon)
         collision_component = \
             CollisionComponent(transform_component,
                                self._collision_transform_update_phase,

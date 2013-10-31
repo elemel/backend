@@ -43,7 +43,7 @@ class Game(pyglet.window.Window):
         self.font_config = BitmapFontConfig()
         self.font_config.load(pyglet.resource.file('font.txt'))
         self.font = BitmapFont(self.glyph_texture, self.font_config)
-        self.label = BitmapLabel(self.font, text='DRILLION',
+        self.label = BitmapLabel(self.font, text='DRILLION', 
                                  batch=self.hud_batch)
 
         self.old_label_time = 0.0
@@ -128,7 +128,8 @@ class Game(pyglet.window.Window):
         label_transform.reset()
         label_transform.scale(label_scale, label_scale)
         label_transform.rotate(label_angle)
-        label_transform.translate(0.5 * float(self.width), 0.5 * self.height)
+        label_transform.translate(0.5 * float(self.width),
+                                  0.25 * float(self.height))
         self.label.transform = label_transform
         self.label.color = 255, 255, 255, cf2ub(label_alpha)
 

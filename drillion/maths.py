@@ -214,9 +214,10 @@ class Polygon2(object):
 
     @property
     def edges(self):
-        for i in xrange(len(self.vertices) - 1):
-            yield self.vertices[i], self.vertices[i + 1]
-        yield self.vertices[-1], self.vertices[0]
+        if len(self.vertices) >= 2:
+            for i in xrange(len(self.vertices) - 1):
+                yield self.vertices[i], self.vertices[i + 1]
+            yield self.vertices[-1], self.vertices[0]
 
     def intersects(self, other):
         return other.intersects_polygon(self)

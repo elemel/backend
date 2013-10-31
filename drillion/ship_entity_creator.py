@@ -39,7 +39,7 @@ class ShipEntityCreator(object):
                                              self._physics_update_phase,
                                              position=position, angle=angle)
 
-        collision_body = CollisionBody(polygon, seed=True)
+        collision_body = CollisionBody(polygon)
         collision_component = CollisionComponent(transform_component,
                                                  self._collision_transform_update_phase,
                                                  collision_body,

@@ -4,19 +4,17 @@ from collections import defaultdict
 from math import floor
 
 class CollisionBody(object):
-    def __init__(self, polygon, transform=Transform2(), seed=False,
-                 user_data=None):
+    def __init__(self, polygon, transform=Transform2(), user_data=None):
         self._polygon = Polygon2(polygon)
         self._transform = Transform2(*transform)
-        self._seed = seed
         self.user_data = user_data
         self._detector = None
         self._key = -1
         self._collisions = []
         self._world_polygon = Polygon2(polygon)
         self._world_bounds = Box2()
-        self._grid_position = 0, 0
-        self._dirty = True
+        self._grid_bounds = (0, 0), (0, 0)
+        self._dirty = False
 
     @property
     def key(self):
@@ -25,10 +23,6 @@ class CollisionBody(object):
     @property
     def transform(self):
         return self._transform
-
-    @property
-    def seed(self):
-        return self._seed
 
     @property
     def dirty(self):
@@ -71,29 +65,48 @@ class CollisionGrid(object):
         self._cells = defaultdict(list)
 
     def add_body(self, body):
-        body._grid_position = self._get_grid_position(body._world_bounds.center)
-        self._cells[body._grid_position].append(body)
+        body._grid_bounds = self._get_grid_bounds(body._world_bounds)
+        (grid_x1, grid_y1), (grid_x2, grid_y2) = body._grid_bounds
+        for grid_x in xrange(grid_x1, grid_x2):
+            for grid_y in xrange(grid_y1, grid_y2):
+                self._cells[grid_x, grid_y].append(body)
 
     def remove_body(self, body):
-        self._cells[body._grid_position].remove(body)
+        (grid_x1, grid_y1), (grid_x2, grid_y2) = body._grid_bounds
+        for grid_x in xrange(grid_x1, grid_x2):
+            for grid_y in xrange(grid_y1, grid_y2):
+                self._cells[grid_x, grid_y].remove(body)
 
-    def _get_grid_position(self, position):
-        x, y = position
-        return int(floor(x / self._cell_size)), int(floor(y / self._cell_size))
+    def update_body(self, body):
+        grid_bounds = self._get_grid_bounds(body._world_bounds)
+        if grid_bounds != body._grid_bounds:
+            self.remove_body(body)
+            self.add_body(body)
+
+    def _get_grid_bounds(self, bounds):
+        x1, y1 = bounds.p1
+        x2, y2 = bounds.p2
+        grid_x1 = int(floor(x1 / self._cell_size))
+        grid_y1 = int(floor(y1 / self._cell_size))
+        grid_x2 = int(floor(x2 / self._cell_size)) + 1
+        grid_y2 = int(floor(y2 / self._cell_size)) + 1
+        return (grid_x1, grid_y1), (grid_x2, grid_y2)
 
     def find_collisions(self, body):
-        grid_x, grid_y = body._grid_position
         bounds = body._world_bounds
-        for i in xrange(grid_x - 1, grid_x + 2):
-            for j in xrange(grid_y - 1, grid_y + 2):
-                for other_body in self._cells[i, j]:
-                    if other_body is not body and \
-                        bounds.intersects(other_body._world_bounds):
-                        yield other_body
+        (grid_x1, grid_y1), (grid_x2, grid_y2) = body._grid_bounds
+        collisions = set()
+        for grid_x in xrange(grid_x1, grid_x2):
+            for grid_y in xrange(grid_y1, grid_y2):
+                collisions.update(self._cells[grid_x, grid_y])
+        for other_body in collisions:
+            if other_body is not body and \
+                    bounds.intersects(other_body._world_bounds):
+                yield other_body
 
 class CollisionDetector(object):
     def __init__(self, listener=None):
-        self._grid = CollisionGrid(5.0)
+        self._grid = CollisionGrid(2.0)
         self._bodies = []
         self._dirty_bodies = []
         self._collisions = []
@@ -106,39 +119,33 @@ class CollisionDetector(object):
         body._key = self._next_key
         self._next_key += 1
 
-        if body._dirty:
-            body._update_world_geometry()
-            body._dirty = False
-        self._grid.add_body(body)
+        body._dirty = True
+        self._dirty_bodies.append(body)
+        body._grid_bounds = (0, 0), (0, 0)
 
     def remove_body(self, body):
         self._grid.remove_body(body)
 
         if body._dirty:
             self._dirty_bodies.remove(body)
-            body._dirty = False
         body._key = -1
         body._detector = None
         self._bodies.remove(body)
 
     def update(self, dt):
-        for body in self._dirty_bodies:
-            body._update_world_geometry()
-            self._grid.remove_body(body)
-            self._grid.add_body(body)
+        collisions = []
+        while self._dirty_bodies:
+            body = self._dirty_bodies.pop()
             body._dirty = False
-        del self._dirty_bodies[:]
 
-        for i, body_i in enumerate(self._bodies):
-            if not body_i.seed:
-                continue
+            body._update_world_geometry()
+            self._grid.update_body(body)
 
-            for j, body_j in enumerate(self._grid.find_collisions(body_i)):
-                if not body_j.seed or i < j:
-                    polygon_i = body_i._world_polygon
-                    polygon_j = body_j._world_polygon
-                    if polygon_i.intersects(polygon_j):
-                        collision = Collision(body_i, body_j)
-                        if self._listener is not None:
-                            self._listener.on_collision_add(collision)
-                            self._listener.on_collision_remove(collision)
+            for other_body in self._grid.find_collisions(body):
+                if not other_body._dirty and \
+                    body._world_polygon.intersects(other_body._world_polygon):
+                    collisions.append(Collision(body, other_body))
+        if self._listener is not None:
+            for collision in collisions:
+                self._listener.on_collision_add(collision)
+                self._listener.on_collision_remove(collision)

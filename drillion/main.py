@@ -38,6 +38,7 @@ class GameCollisionListener(CollisionListener):
                     self.game.remove_entity(entity_a)
                 if categories == ('block', 'bullet'):
                     self.game.remove_entity(entity_a)
+                    self.game.remove_entity(entity_b)
         del self.collisions[:]
 
 def main():
@@ -147,9 +148,12 @@ def main():
     game.add_entity(cannon_entity_2_2)
     game.add_entity(cannon_entity_2_3)
 
-    for i in xrange(100):
-        position = random.uniform(-20.0, 20.0), random.uniform(-20.0, 20.0)
-        velocity = random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)
+    for i in xrange(200):
+        angle = random.uniform(-math.pi, math.pi)
+        position_factor = random.uniform(4.0, 6.0)
+        velocity_factor = random.uniform(1.0, 2.0)
+        position = position_factor * math.cos(angle), position_factor * math.sin(angle)
+        velocity = velocity_factor * math.cos(angle), velocity_factor * math.sin(angle)
         bullet_entity = bullet_entity_creator.create(position=position,
                                                      velocity=velocity)
         game.add_entity(bullet_entity)
