@@ -1,4 +1,5 @@
 from drillion.block_entity_creator import BlockEntityCreator
+from drillion.bullet_entity_creator import BulletEntityCreator
 from drillion.cannon_entity_creator import CannonEntityCreator
 from drillion.collision import CollisionDetector, CollisionListener
 from drillion.draw_phase import DrawPhase
@@ -34,6 +35,8 @@ class GameCollisionListener(CollisionListener):
                 if categories == ('block', 'ship'):
                     self.game.remove_entity(entity_b)
                 if categories == ('block', 'drill'):
+                    self.game.remove_entity(entity_a)
+                if categories == ('block', 'bullet'):
                     self.game.remove_entity(entity_a)
         del self.collisions[:]
 
@@ -71,8 +74,13 @@ def main():
                                             draw_phase, game.key_state_handler,
                                             collision_detector, game.batch)
     cannon_entity_creator = CannonEntityCreator(animation_update_phase,
-                                                draw_phase,
-                                                game.batch)
+                                                draw_phase, game.batch)
+
+    bullet_entity_creator = \
+        BulletEntityCreator(physics_update_phase,
+                            collision_transform_update_phase,
+                            animation_update_phase, draw_phase,
+                            collision_detector, game.batch)
 
     seed_x = random.random()
     seed_y = random.random()
@@ -138,6 +146,13 @@ def main():
     game.add_entity(cannon_entity_2_1)
     game.add_entity(cannon_entity_2_2)
     game.add_entity(cannon_entity_2_3)
+
+    for i in xrange(100):
+        position = random.uniform(-20.0, 20.0), random.uniform(-20.0, 20.0)
+        velocity = random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)
+        bullet_entity = bullet_entity_creator.create(position=position,
+                                                     velocity=velocity)
+        game.add_entity(bullet_entity)
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()

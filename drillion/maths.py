@@ -157,13 +157,25 @@ class Box2(object):
         self.p1 = Vector2(*p1)
         self.p2 = Vector2(*p2)
 
+    @property
+    def center(self):
+        x1, y1 = self.p1
+        x2, y2 = self.p2
+        return 0.5 * (x1 + x2), 0.5 * (y1 + y2)
+
+    @property
+    def size(self):
+        x1, y1 = self.p1
+        x2, y2 = self.p2
+        return x2 - x1, y2 - y1
+
     def reset(self):
         self.p1.assign(-1.0, -1.0)
         self.p2.assign(1.0, 1.0)
 
     def clear(self):
         self.p1.assign(float('inf'), float('inf'))
-        self.p2.assign(float('-inf'), float('inf'))
+        self.p2.assign(float('-inf'), float('-inf'))
 
     def add_point(self, x, y):
         self.p1.x = min(self.p1.x, x)

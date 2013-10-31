@@ -1,5 +1,8 @@
 from drillion.maths import Box2, Polygon2, Transform2
 
+from collections import defaultdict
+from math import floor
+
 class CollisionBody(object):
     def __init__(self, polygon, transform=Transform2(), seed=False,
                  user_data=None):
@@ -12,6 +15,7 @@ class CollisionBody(object):
         self._collisions = []
         self._world_polygon = Polygon2(polygon)
         self._world_bounds = Box2()
+        self._grid_position = 0, 0
         self._dirty = True
 
     @property
@@ -61,8 +65,35 @@ class CollisionListener(object):
     def on_collision_remove(self, collision):
         pass
 
+class CollisionGrid(object):
+    def __init__(self, cell_size=1.0):
+        self._cell_size = cell_size
+        self._cells = defaultdict(list)
+
+    def add_body(self, body):
+        body._grid_position = self._get_grid_position(body._world_bounds.center)
+        self._cells[body._grid_position].append(body)
+
+    def remove_body(self, body):
+        self._cells[body._grid_position].remove(body)
+
+    def _get_grid_position(self, position):
+        x, y = position
+        return int(floor(x / self._cell_size)), int(floor(y / self._cell_size))
+
+    def find_collisions(self, body):
+        grid_x, grid_y = body._grid_position
+        bounds = body._world_bounds
+        for i in xrange(grid_x - 1, grid_x + 2):
+            for j in xrange(grid_y - 1, grid_y + 2):
+                for other_body in self._cells[i, j]:
+                    if other_body is not body and \
+                        bounds.intersects(other_body._world_bounds):
+                        yield other_body
+
 class CollisionDetector(object):
     def __init__(self, listener=None):
+        self._grid = CollisionGrid(5.0)
         self._bodies = []
         self._dirty_bodies = []
         self._collisions = []
@@ -75,10 +106,14 @@ class CollisionDetector(object):
         body._key = self._next_key
         self._next_key += 1
 
-        self._dirty_bodies.append(body)
-        body._dirty = True
+        if body._dirty:
+            body._update_world_geometry()
+            body._dirty = False
+        self._grid.add_body(body)
 
     def remove_body(self, body):
+        self._grid.remove_body(body)
+
         if body._dirty:
             self._dirty_bodies.remove(body)
             body._dirty = False
@@ -89,6 +124,8 @@ class CollisionDetector(object):
     def update(self, dt):
         for body in self._dirty_bodies:
             body._update_world_geometry()
+            self._grid.remove_body(body)
+            self._grid.add_body(body)
             body._dirty = False
         del self._dirty_bodies[:]
 
@@ -96,10 +133,8 @@ class CollisionDetector(object):
             if not body_i.seed:
                 continue
 
-            for j, body_j in enumerate(self._bodies):
-                bounds_i = body_i._world_bounds
-                bounds_j = body_j._world_bounds
-                if (not body_j.seed or i < j) and bounds_i.intersects(bounds_j):
+            for j, body_j in enumerate(self._grid.find_collisions(body_i)):
+                if not body_j.seed or i < j:
                     polygon_i = body_i._world_polygon
                     polygon_j = body_j._world_polygon
                     if polygon_i.intersects(polygon_j):
