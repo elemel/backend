@@ -1,9 +1,9 @@
 from drillion.component import Component
-from drillion.ship_keys import PLAYER_SHIP_KEYS
+from drillion.ship_keys import PLAYER_1_SHIP_KEYS
 
 class ShipInputComponent(Component):
     def __init__(self, update_phase, control_component, key_state_handler,
-                 keys=PLAYER_SHIP_KEYS):
+                 keys=PLAYER_1_SHIP_KEYS):
         super(ShipInputComponent, self).__init__()
 
         self._update_phase = update_phase
@@ -31,6 +31,7 @@ class ShipInputComponent(Component):
 
         self._control_component.turn_control = turn_control
         self._control_component.thrust_control = thrust_control
+        self._control_component.fire_control = fire_control
 
     def get_control(self, keys):
         for key in keys:

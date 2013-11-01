@@ -19,6 +19,7 @@ class PhysicsComponent(Component):
         self.update_phase = update_phase
 
         self._transform = Transform2()
+        self._update_transform()
 
     def create(self):
         self.update_phase.add_handler(self)
@@ -42,9 +43,11 @@ class PhysicsComponent(Component):
         self.position = x, y
         self.velocity = dx, dy
 
+        self._update_transform()
+
+    def _update_transform(self):
         self._transform.reset()
         if self.angle != 0.0:
             self._transform.rotate(self.angle)
-        if x != 0.0 or y != 0.0:
-            self._transform.translate(x, y)
+        self._transform.translate(*self.position)
         self.transform_component.transform = self._transform

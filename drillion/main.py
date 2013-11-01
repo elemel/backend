@@ -67,27 +67,27 @@ def main():
     collision_listener.game = game
 
     block_entity_creator = BlockEntityCreator(collision_detector, game.batch)
+    bullet_entity_creator = \
+        BulletEntityCreator(physics_update_phase,
+                            collision_transform_update_phase,
+                            animation_update_phase, draw_phase,
+                            collision_detector, game.batch)
     ship_entity_creator = ShipEntityCreator(input_update_phase,
                                             control_update_phase,
                                             physics_update_phase,
                                             collision_transform_update_phase,
                                             animation_update_phase,
                                             draw_phase, game.key_state_handler,
-                                            collision_detector, game.batch)
+                                            collision_detector, game.batch,
+                                            bullet_entity_creator, game)
     cannon_entity_creator = CannonEntityCreator(animation_update_phase,
                                                 draw_phase, game.batch)
-
-    bullet_entity_creator = \
-        BulletEntityCreator(physics_update_phase,
-                            collision_transform_update_phase,
-                            animation_update_phase, draw_phase,
-                            collision_detector, game.batch)
 
     seed_x = random.random()
     seed_y = random.random()
     seed_z = random.random()
 
-    noise_scale = 0.2
+    noise_scale = 0.15
 
     for grid_x in xrange(-20, 20):
         for grid_y in xrange(-20, 20):
@@ -147,16 +147,6 @@ def main():
     game.add_entity(cannon_entity_2_1)
     game.add_entity(cannon_entity_2_2)
     game.add_entity(cannon_entity_2_3)
-
-    for i in xrange(200):
-        angle = random.uniform(-math.pi, math.pi)
-        position_factor = random.uniform(4.0, 6.0)
-        velocity_factor = random.uniform(1.0, 2.0)
-        position = position_factor * math.cos(angle), position_factor * math.sin(angle)
-        velocity = velocity_factor * math.cos(angle), velocity_factor * math.sin(angle)
-        bullet_entity = bullet_entity_creator.create(position=position,
-                                                     velocity=velocity)
-        game.add_entity(bullet_entity)
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()

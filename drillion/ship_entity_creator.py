@@ -7,7 +7,7 @@ from drillion.maths import generate_circle_vertices, Polygon2
 from drillion.physics_component import PhysicsComponent
 from drillion.ship_control_component import ShipControlComponent
 from drillion.ship_input_component import ShipInputComponent
-from drillion.ship_keys import PLAYER_SHIP_KEYS
+from drillion.ship_keys import PLAYER_1_SHIP_KEYS
 from drillion.sprite import PolygonSprite
 from drillion.sprite_component import SpriteComponent
 from drillion.transform_component import TransformComponent
@@ -16,7 +16,7 @@ class ShipEntityCreator(object):
     def __init__(self, input_update_phase, control_update_phase,
                  physics_update_phase, collision_transform_update_phase,
                  animation_update_phase, draw_phase, key_state_handler,
-                 collision_detector, batch):
+                 collision_detector, batch, bullet_entity_creator, game):
         self._input_update_phase = input_update_phase
         self._control_update_phase = control_update_phase
         self._physics_update_phase = physics_update_phase
@@ -29,8 +29,11 @@ class ShipEntityCreator(object):
         self._collision_detector = collision_detector
         self._batch = batch
 
+        self._bullet_entity_creator = bullet_entity_creator
+        self._game = game
+
     def create(self, position=(0.0, 0.0), angle=0.0, color=WHITE,
-               keys=PLAYER_SHIP_KEYS):
+               keys=PLAYER_1_SHIP_KEYS):
         vertices = generate_circle_vertices(3)
         polygon = Polygon2(vertices)
 
@@ -46,7 +49,9 @@ class ShipEntityCreator(object):
                                                  self._collision_detector)
 
         control_component = ShipControlComponent(physics_component,
-                                                 self._control_update_phase)
+                                                 self._control_update_phase,
+                                                 self._bullet_entity_creator,
+                                                 self._game)
         input_component = ShipInputComponent(self._input_update_phase,
                                              control_component,
                                              self._key_state_handler, keys)
