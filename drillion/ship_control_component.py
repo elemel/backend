@@ -18,7 +18,7 @@ class ShipControlComponent(Component):
         self.max_turn_velocity = 2.0 * math.pi
 
         self.fire_time = 0.0
-        self.cooldown_time = 0.1
+        self.cooldown_time = 0.05
         self.bullet_velocity = 10.0
 
         self.turn_control = 0.0
@@ -43,15 +43,25 @@ class ShipControlComponent(Component):
         self.fire_time -= dt
         if self.fire_time < 0.0 and self.fire_control > 0.5:
             self.fire_time = self.cooldown_time
-            position = self.physics_component.position
+
+            position_x, position_y = self.physics_component.position
             angle = self.physics_component.angle
-            angle += random.uniform(-0.1, 0.1)
-            angle_x = math.cos(angle)
-            angle_y = math.sin(angle)
+            normal_x = math.cos(angle)
+            normal_y = math.sin(angle)
+            tangent_x, tangent_y = -normal_y, normal_x
+
+            position_offset = random.uniform(-0.5, 0.5)
+            position_x += position_offset * tangent_x
+            position_y += position_offset * tangent_y
+            position = position_x, position_y
+
+            bullet_velocity = self.bullet_velocity
+            bullet_velocity += random.uniform(-0.5, 0.5)
             velocity_x, velocity_y = self.physics_component.velocity
-            velocity_x += self.bullet_velocity * angle_x
-            velocity_y += self.bullet_velocity * angle_y
+            velocity_x += bullet_velocity * normal_x
+            velocity_y += bullet_velocity * normal_y
             velocity = velocity_x, velocity_y
+
             bullet_entity = \
                 self.bullet_entity_creator.create(position=position,
                                                   velocity=velocity)
