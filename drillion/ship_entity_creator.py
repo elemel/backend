@@ -40,7 +40,8 @@ class ShipEntityCreator(object):
         transform_component = TransformComponent()
         physics_component = PhysicsComponent(transform_component,
                                              self._physics_update_phase,
-                                             position=position, angle=angle)
+                                             position=position,
+                                             max_velocity=10.0, angle=angle)
 
         collision_body = CollisionBody(polygon)
         collision_component = CollisionComponent(transform_component,

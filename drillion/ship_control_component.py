@@ -1,5 +1,5 @@
 from drillion.component import Component
-from drillion.maths import Vector2
+from drillion.maths import clamp, mix, Vector2
 
 import math
 import random
@@ -15,7 +15,7 @@ class ShipControlComponent(Component):
         self.game = game
 
         self.max_thrust_acceleration = 10.0
-        self.max_turn_velocity = 2.0 * math.pi
+        self.max_turn_acceleration = 8.0 * math.pi
 
         self.fire_time = 0.0
         self.cooldown_time = 0.05
@@ -35,10 +35,16 @@ class ShipControlComponent(Component):
         angle = self.physics_component.angle
         direction = Vector2(math.cos(angle), math.sin(angle))
 
-        self.physics_component.angular_velocity = \
-            self.turn_control * self.max_turn_velocity
+        self.physics_component.angular_acceleration = \
+            self.turn_control * self.max_turn_acceleration
+        self.physics_component.angular_friction = \
+            self.max_turn_acceleration * (1.0 - abs(self.turn_control))
+
         self.physics_component.acceleration = \
-            self.thrust_control * self.max_thrust_acceleration * direction
+            (max(0.0, self.thrust_control) * self.max_thrust_acceleration *
+             direction)
+        self.physics_component.friction = \
+            max(0.0, -self.thrust_control) * self.max_thrust_acceleration
 
         self.fire_time -= dt
         if self.fire_time < 0.0 and self.fire_control > 0.5:

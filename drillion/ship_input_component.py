@@ -13,6 +13,7 @@ class ShipInputComponent(Component):
         self._left_keys = list(keys['left'])
         self._right_keys = list(keys['right'])
         self._thrust_keys = list(keys['thrust'])
+        self._brake_keys = list(keys['brake'])
         self._fire_keys = list(keys['fire'])
 
     def create(self):
@@ -25,12 +26,13 @@ class ShipInputComponent(Component):
         left_control = self.get_control(self._left_keys)
         right_control = self.get_control(self._right_keys)
         thrust_control = self.get_control(self._thrust_keys)
+        brake_control = self.get_control(self._brake_keys)
         fire_control = self.get_control(self._fire_keys)
 
         turn_control = left_control - right_control
 
         self._control_component.turn_control = turn_control
-        self._control_component.thrust_control = thrust_control
+        self._control_component.thrust_control = thrust_control - brake_control
         self._control_component.fire_control = fire_control
 
     def get_control(self, keys):

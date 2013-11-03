@@ -27,7 +27,8 @@ class BulletEntityCreator(object):
         physics_component = PhysicsComponent(transform_component,
                                              self._physics_update_phase,
                                              position=position,
-                                             velocity=velocity)
+                                             velocity=velocity,
+                                             max_velocity=20.0)
 
         collision_vertices = [(0.0, 0.0)]
         collision_polygon = Polygon2(collision_vertices)
