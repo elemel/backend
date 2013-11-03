@@ -16,7 +16,8 @@ class ShipEntityCreator(object):
     def __init__(self, input_update_phase, control_update_phase,
                  physics_update_phase, collision_transform_update_phase,
                  animation_update_phase, draw_phase, key_state_handler,
-                 collision_detector, batch, bullet_entity_creator, game):
+                 collision_detector, batch, bullet_entity_creator,
+                 entity_manager):
         self._input_update_phase = input_update_phase
         self._control_update_phase = control_update_phase
         self._physics_update_phase = physics_update_phase
@@ -30,7 +31,7 @@ class ShipEntityCreator(object):
         self._batch = batch
 
         self._bullet_entity_creator = bullet_entity_creator
-        self._game = game
+        self._entity_manager = entity_manager
 
     def create(self, position=(0.0, 0.0), angle=0.0, color=WHITE,
                keys=PLAYER_1_SHIP_KEYS):
@@ -52,7 +53,7 @@ class ShipEntityCreator(object):
         control_component = ShipControlComponent(physics_component,
                                                  self._control_update_phase,
                                                  self._bullet_entity_creator,
-                                                 self._game)
+                                                 self._entity_manager)
         input_component = ShipInputComponent(self._input_update_phase,
                                              control_component,
                                              self._key_state_handler, keys)

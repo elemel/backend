@@ -3,6 +3,7 @@ from drillion.bullet_entity_creator import BulletEntityCreator
 from drillion.cannon_entity_creator import CannonEntityCreator
 from drillion.collision import CollisionDetector, CollisionListener
 from drillion.draw_phase import DrawPhase
+from drillion.entity_manager import EntityManager
 from drillion.game import Game
 from drillion.pnoise import pnoise
 from drillion.ship_keys import PLAYER_1_SHIP_KEYS, PLAYER_2_SHIP_KEYS
@@ -16,8 +17,8 @@ import math
 import random
 
 class GameCollisionListener(CollisionListener):
-    def __init__(self, game=None):
-        self.game = game
+    def __init__(self, entity_manager):
+        self.entity_manager = entity_manager
         self.collisions = []
 
     def on_collision_add(self, collision):
@@ -33,12 +34,12 @@ class GameCollisionListener(CollisionListener):
             if entity_a.key != -1 and entity_b.key != -1:
                 categories = category_a, category_b
                 if categories == ('block', 'ship'):
-                    self.game.remove_entity(entity_b)
+                    self.entity_manager.remove_entity(entity_b)
                 if categories == ('block', 'drill'):
-                    self.game.remove_entity(entity_a)
+                    self.entity_manager.remove_entity(entity_a)
                 if categories == ('block', 'bullet'):
-                    self.game.remove_entity(entity_a)
-                    self.game.remove_entity(entity_b)
+                    self.entity_manager.remove_entity(entity_a)
+                    self.entity_manager.remove_entity(entity_b)
         del self.collisions[:]
 
 def main():
@@ -52,7 +53,9 @@ def main():
     collision_update_phase = UpdatePhase('collision')
     animation_update_phase = UpdatePhase('animation')
 
-    collision_listener = GameCollisionListener()
+    entity_manager = EntityManager()
+
+    collision_listener = GameCollisionListener(entity_manager)
     collision_detector = CollisionDetector(listener=collision_listener)
     collision_update_phase.add_handler(collision_detector)
     collision_update_phase.add_handler(collision_listener)
@@ -79,7 +82,8 @@ def main():
                                             animation_update_phase,
                                             draw_phase, game.key_state_handler,
                                             collision_detector, game.batch,
-                                            bullet_entity_creator, game)
+                                            bullet_entity_creator,
+                                            entity_manager)
     cannon_entity_creator = CannonEntityCreator(animation_update_phase,
                                                 draw_phase, game.batch)
 
@@ -99,12 +103,12 @@ def main():
             density = pnoise(noise_x, noise_y, noise_z)
             if density > 0.0:
                 block_entity = block_entity_creator.create(grid_position=(grid_x, grid_y))
-                game.add_entity(block_entity)
+                entity_manager.add_entity(block_entity)
 
     ship_entity_1 = ship_entity_creator.create(position=(-2.0, 0.0),
                                                angle=(0.5 * math.pi),
                                                keys=PLAYER_1_SHIP_KEYS)
-    game.add_entity(ship_entity_1)
+    entity_manager.add_entity(ship_entity_1)
 
     cannon_entity_1_1 = cannon_entity_creator.create(ship_entity_1,
                                                      position=(-0.5, 0.5),
@@ -122,15 +126,15 @@ def main():
                                                      position=(-0.5, -0.5),
                                                      angle=(0.0 * math.pi),
                                                      length=1.5, width=0.125)
-    game.add_entity(cannon_entity_1_1)
-    game.add_entity(cannon_entity_1_2)
-    game.add_entity(cannon_entity_1_3)
-    game.add_entity(cannon_entity_1_4)
+    entity_manager.add_entity(cannon_entity_1_1)
+    entity_manager.add_entity(cannon_entity_1_2)
+    entity_manager.add_entity(cannon_entity_1_3)
+    entity_manager.add_entity(cannon_entity_1_4)
 
     ship_entity_2 = ship_entity_creator.create(position=(2.0, 0.0),
                                                angle=(0.5 * math.pi),
                                                keys=PLAYER_2_SHIP_KEYS)
-    game.add_entity(ship_entity_2)
+    entity_manager.add_entity(ship_entity_2)
 
     cannon_entity_2_1 = cannon_entity_creator.create(ship_entity_2,
                                                      position=(-0.5, 0.25),
@@ -144,9 +148,9 @@ def main():
                                                      position=(-0.5, -0.25),
                                                      angle=(0.0 * math.pi),
                                                      length=1.75, width=0.125)
-    game.add_entity(cannon_entity_2_1)
-    game.add_entity(cannon_entity_2_2)
-    game.add_entity(cannon_entity_2_3)
+    entity_manager.add_entity(cannon_entity_2_1)
+    entity_manager.add_entity(cannon_entity_2_2)
+    entity_manager.add_entity(cannon_entity_2_3)
 
     pyglet.clock.schedule(game.update)
     pyglet.app.run()

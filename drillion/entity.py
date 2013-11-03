@@ -1,7 +1,6 @@
 class Entity(object):
     def __init__(self, components=[], parent=None):
         self.components = list(components)
-        self.game = None
         self.key = -1
         self._parent = parent
         self._children = []
