@@ -35,8 +35,6 @@ class GameCollisionListener(CollisionListener):
                 categories = category_a, category_b
                 if categories == ('block', 'ship'):
                     self.entity_manager.remove_entity(entity_b)
-                if categories == ('block', 'drill'):
-                    self.entity_manager.remove_entity(entity_a)
                 if categories == ('block', 'bullet'):
                     self.entity_manager.remove_entity(entity_a)
                     self.entity_manager.remove_entity(entity_b)
