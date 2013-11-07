@@ -144,7 +144,11 @@ class CollisionDetector(object):
             for other_body in self._grid.find_collisions(body):
                 if not other_body._dirty and \
                     body._world_polygon.intersects(other_body._world_polygon):
-                    collisions.append(Collision(body, other_body))
+                    if body.user_data < other_body.user_data:
+                        collision = Collision(body, other_body)
+                    else:
+                        collision = Collision(other_body, body)
+                    collisions.append(collision)
         if self._listener is not None:
             for collision in collisions:
                 self._listener.on_collision_add(collision)

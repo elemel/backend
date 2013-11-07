@@ -1,7 +1,10 @@
 from drillion.block_entity_creator import BlockEntityCreator
+from drillion.block_bullet_collision_handler import BlockBulletCollisionHandler
+from drillion.block_ship_collision_handler import BlockShipCollisionHandler
 from drillion.bullet_entity_creator import BulletEntityCreator
 from drillion.cannon_entity_creator import CannonEntityCreator
-from drillion.collision import CollisionDetector, CollisionListener
+from drillion.collision import CollisionDetector
+from drillion.collision_dispatcher import CollisionDispatcher
 from drillion.draw_phase import DrawPhase
 from drillion.entity_manager import EntityManager
 from drillion.game import Game
@@ -16,30 +19,6 @@ from pyglet.gl import *
 import math
 import random
 
-class GameCollisionListener(CollisionListener):
-    def __init__(self, entity_manager):
-        self.entity_manager = entity_manager
-        self.collisions = []
-
-    def on_collision_add(self, collision):
-        self.collisions.append(collision)
-
-    def update(self, dt):
-        for collision in self.collisions:
-            category_a, entity_a = collision.body_a.user_data
-            category_b, entity_b = collision.body_b.user_data
-            if category_b < category_a:
-                category_a, category_b = category_b, category_a
-                entity_a, entity_b = entity_b, entity_a
-            if entity_a.key != -1 and entity_b.key != -1:
-                categories = category_a, category_b
-                if categories == ('block', 'ship'):
-                    self.entity_manager.remove_entity(entity_b)
-                if categories == ('block', 'bullet'):
-                    self.entity_manager.remove_entity(entity_a)
-                    self.entity_manager.remove_entity(entity_b)
-        del self.collisions[:]
-
 def main():
     pyglet.resource.path.append('../data')
     pyglet.resource.reindex()
@@ -53,10 +32,16 @@ def main():
 
     entity_manager = EntityManager()
 
-    collision_listener = GameCollisionListener(entity_manager)
-    collision_detector = CollisionDetector(listener=collision_listener)
+    block_bullet_collision_handler = BlockBulletCollisionHandler(entity_manager)
+    block_ship_collision_handler = BlockShipCollisionHandler(entity_manager)
+    collision_handlers = {
+        ('block', 'bullet'): block_bullet_collision_handler,
+        ('block', 'ship'): block_ship_collision_handler,
+    }
+    collision_dispatcher = CollisionDispatcher(collision_handlers)
+
+    collision_detector = CollisionDetector(listener=collision_dispatcher)
     collision_update_phase.add_handler(collision_detector)
-    collision_update_phase.add_handler(collision_listener)
 
     draw_phase = DrawPhase('draw')
 
@@ -65,7 +50,6 @@ def main():
                      collision_update_phase, animation_update_phase]
     draw_phases = [draw_phase]
     game = Game(update_phases, draw_phases)
-    collision_listener.game = game
 
     block_entity_creator = BlockEntityCreator(collision_detector, game.batch)
     bullet_entity_creator = \
