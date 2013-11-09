@@ -1,5 +1,6 @@
 from drillion.collision import CollisionBody
 from drillion.collision_component import CollisionComponent
+from drillion.color_component import ColorComponent
 from drillion.color_generator import ColorGenerator, ClampedGaussGenerator
 from drillion.entity import Entity
 from drillion.maths import cf2ub, generate_circle_vertices, Polygon2, Transform2
@@ -33,18 +34,20 @@ class BlockEntityCreator(object):
         transform = Transform2()
         transform_component = TransformComponent(transform)
 
+        float_color = self._color_generator.generate()
+        color = tuple(cf2ub(c) for c in float_color)
+        color_component = ColorComponent(color)
+
         collision_body = CollisionBody(polygon, transform)
         collision_component = CollisionComponent(transform_component, None,
                                                  collision_body,
                                                  self._collision_detector)
 
-        float_color = self._color_generator.generate()
-        color = tuple(cf2ub(c) for c in float_color)
         sprite = PolygonSprite(vertices, color=color, transform=transform)
         sprite_component = SpriteComponent(sprite, self._batch)
 
-        components = [transform_component, collision_component,
-                      sprite_component]
+        components = [transform_component, color_component,
+                      collision_component, sprite_component]
         entity = Entity(components)
         collision_body.user_data = 'block', entity
         return entity
