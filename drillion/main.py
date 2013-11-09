@@ -28,6 +28,7 @@ def main():
     physics_update_phase = UpdatePhase('physics')
     collision_transform_update_phase = UpdatePhase('collision_transform')
     collision_update_phase = UpdatePhase('collision')
+    health_update_phase = UpdatePhase('health')
     animation_update_phase = UpdatePhase('animation')
 
     entity_manager = EntityManager()
@@ -45,13 +46,20 @@ def main():
 
     draw_phase = DrawPhase('draw')
 
-    update_phases = [input_update_phase, control_update_phase,
-                     physics_update_phase, collision_transform_update_phase,
-                     collision_update_phase, animation_update_phase]
+    update_phases = [
+        input_update_phase,
+        control_update_phase,
+        physics_update_phase,
+        collision_transform_update_phase,
+        collision_update_phase,
+        health_update_phase,
+        animation_update_phase,
+    ]
     draw_phases = [draw_phase]
     game = Game(update_phases, draw_phases)
 
-    block_entity_creator = BlockEntityCreator(collision_detector, game.batch)
+    block_entity_creator = BlockEntityCreator(health_update_phase,
+                                              collision_detector, game.batch)
     bullet_entity_creator = \
         BulletEntityCreator(physics_update_phase,
                             collision_transform_update_phase,

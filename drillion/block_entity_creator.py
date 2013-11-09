@@ -2,6 +2,7 @@ from drillion.collision import CollisionBody
 from drillion.collision_component import CollisionComponent
 from drillion.color_component import ColorComponent
 from drillion.color_generator import ColorGenerator, ClampedGaussGenerator
+from drillion.health_component import HealthComponent
 from drillion.entity import Entity
 from drillion.maths import cf2ub, generate_circle_vertices, Polygon2, Transform2
 from drillion.sprite import PolygonSprite
@@ -11,7 +12,8 @@ from drillion.transform_component import TransformComponent
 import random
 
 class BlockEntityCreator(object):
-    def __init__(self, collision_detector, batch):
+    def __init__(self, health_update_phase, collision_detector, batch):
+        self._health_update_phase = health_update_phase
         self._collision_detector = collision_detector
         self._batch = batch
 
@@ -38,6 +40,8 @@ class BlockEntityCreator(object):
         color = tuple(cf2ub(c) for c in float_color)
         color_component = ColorComponent(color)
 
+        health_component = HealthComponent(self._health_update_phase)
+
         collision_body = CollisionBody(polygon, transform)
         collision_component = CollisionComponent(transform_component, None,
                                                  collision_body,
@@ -46,7 +50,7 @@ class BlockEntityCreator(object):
         sprite = PolygonSprite(vertices, color=color, transform=transform)
         sprite_component = SpriteComponent(sprite, self._batch)
 
-        components = [transform_component, color_component,
+        components = [transform_component, color_component, health_component,
                       collision_component, sprite_component]
         entity = Entity(components)
         collision_body.user_data = 'block', entity
