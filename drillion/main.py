@@ -77,9 +77,9 @@ def main():
     cannon_entity_creator = CannonEntityCreator(animation_update_phase,
                                                 draw_phase, game.batch)
 
-    seed_x = random.random()
-    seed_y = random.random()
-    seed_z = random.random()
+    seed_x = 1000.0 * random.random()
+    seed_y = 1000.0 * random.random()
+    seed_z = 1000.0 * random.random()
 
     noise_scale = 0.15
 
